@@ -48,72 +48,23 @@ const ORAL_PATHOLOGY_VIDEOS = [
   { title: "Oral Pathology | Odontogenic Tumors | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Wp26KRnGfGg" },
   { title: "Oral Pathology | Fibro-Osseous Lesions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=qHpoMDLKGDo" },
   { title: "Oral Pathology | Giant Cell Lesions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=fRahDN7_wDg" },
-  { title: "Oral Pathology | Bone Inflammatory Lesions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=-a5-EHnZ_XA" },
-  { title: "Oral Pathology | Bone Malignant Lesions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=EHzEbKDgeRU" },
-  { title: "Oral Pathology | Hereditary Conditions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=betY_3dGG_M" },
-  { title: "Oral Pathology | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=r6gbhR7JTMo" }
-];
 
-const generatePrompt = (playlist: Playlist) => {
-  const isHeadAndNeck = playlist.title.includes('Head and Neck');
-  const isPharmacology = playlist.title.includes('Pharmacology');
-  const isOralRadiology = playlist.title.includes('Oral Radiology');
-  const isOralPathology = playlist.title.includes('Oral Pathology');
-
-  let videoContext = '';
-  if (isHeadAndNeck) {
-    videoContext = `
-    For this specific "Head & Neck Anatomy" playlist, you MUST use the following 20 videos with their EXACT URLs. 
-    Do NOT search for them, use the provided URLs:
-    ${HEAD_AND_NECK_VIDEOS.map((v, i) => `${i + 1}. ${v.title}: ${v.url}`).join('\n    ')}
-    `;
-  } else if (isPharmacology) {
-    videoContext = `
-    For this specific "Pharmacology" playlist, you MUST use the following 10 videos with their EXACT URLs. 
-    Do NOT search for them, use the provided URLs:
-    ${PHARMACOLOGY_VIDEOS.map((v, i) => `${i + 1}. ${v.title}: ${v.url}`).join('\n    ')}
-    `;
-  } else if (isOralRadiology) {
-    videoContext = `
-    For this specific "Oral Radiology" playlist, you MUST use the following 7 videos with their EXACT URLs. 
-    Do NOT search for them, use the provided URLs:
-    ${ORAL_RADIOLOGY_VIDEOS.map((v, i) => `${i + 1}. ${v.title}: ${v.url}`).join('\n    ')}
-    `;
-  } else if (isOralPathology) {
-    videoContext = `
-    For this specific "Oral Pathology" playlist, you MUST use the following 20 videos with their EXACT URLs. 
-    Do NOT search for them, use the provided URLs:
-    ${ORAL_PATHOLOGY_VIDEOS.map((v, i) => `${i + 1}. ${v.title}: ${v.url}`).join('\n    ')}
-    `;
-  } else {
-    // Fallback for other playlists
-    videoContext = `
-    1. Identify EVERY video in this playlist ("${playlist.title}").
-    2. For each video, retrieve the specific YouTube URL (e.g., https://www.youtube.com/watch?v=...).
-    `;
-  }
-
-  return `
-    You are an expert tutor specializing in the INBDE dental examination.
-    
-    TASK: Generate comprehensive study materials for the "${playlist.title}" playlist.
-    
-    ${videoContext}
+  ${ videoContext }
     
     For EACH video listed above, create an independent study module with:
-    - "videoTitle": The exact title of the video
-    - "videoUrl": The specific YouTube link provided above
-    - "summary": A detailed 3-4 paragraph high-yield summary of key clinical concepts
-    - "flashcards": Exactly 5 detailed flashcards (Front/Back format)
-    - "multipleChoice": Exactly 3 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation
-    - "trueFalse": Exactly 3 True/False statements with detailed reasoning
-    
-    CRITICAL: The output MUST be a valid JSON object with:
-    - "playlistTitle": "${playlist.title}"
-    - "playlistUrl": "${playlist.url}"
+- "videoTitle": The exact title of the video
+  - "videoUrl": The specific YouTube link provided above
+    - "summary": A detailed 3 - 4 paragraph high - yield summary of key clinical concepts
+      - "flashcards": Exactly 5 detailed flashcards(Front / Back format)
+        - "multipleChoice": Exactly 3 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation
+          - "trueFalse": Exactly 3 True / False statements with detailed reasoning
+
+CRITICAL: The output MUST be a valid JSON object with:
+- "playlistTitle": "${playlist.title}"
+  - "playlistUrl": "${playlist.url}"
     - "modules": An array containing one object for EACH video above
     
-    Ensure 100% accuracy to Dr. Ryan's Mental Dental curriculum.
+    Ensure 100 % accuracy to Dr.Ryan's Mental Dental curriculum.
   `;
 };
 
