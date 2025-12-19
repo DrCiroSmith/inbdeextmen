@@ -6,15 +6,34 @@ import { JsonViewer } from './components/JsonViewer';
 import { generatePlaylistData } from './services/geminiService';
 
 const App: React.FC = () => {
-  const [apiKey, setApiKey] = useState(process.env.API_KEY || '');
+  // Load API key from localStorage or environment
+  const [apiKey, setApiKey] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('gemini_api_key') || process.env.API_KEY || '';
+    }
+    return process.env.API_KEY || '';
+  });
+  const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey);
+  const [tempApiKey, setTempApiKey] = useState('');
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [generatedData, setGeneratedData] = useState<StudyData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const handleSaveApiKey = () => {
+    if (tempApiKey.trim()) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('gemini_api_key', tempApiKey.trim());
+      }
+      setApiKey(tempApiKey.trim());
+      setShowApiKeyInput(false);
+      setTempApiKey('');
+    }
+  };
+
   const handleSelectPlaylist = async (playlist: Playlist) => {
     if (!apiKey) {
-      alert("Please ensure your API Key is configured in the environment.");
+      setShowApiKeyInput(true);
       return;
     }
 
@@ -53,29 +72,80 @@ const App: React.FC = () => {
                 Mental Dental Extractor
               </span>
             </div>
-            <div className="flex items-center">
-               <span className="text-xs font-mono bg-gray-100 px-3 py-1 rounded-full text-gray-500">
-                 INBDE Builder Ready
-               </span>
+            <div className="flex items-center gap-3">
+              {apiKey && (
+                <span className="text-xs font-mono bg-green-100 px-3 py-1 rounded-full text-green-700">
+                  API Key Set ✓
+                </span>
+              )}
+              <button
+                onClick={() => setShowApiKeyInput(true)}
+                className="text-sm text-gray-600 hover:text-blue-600 font-medium transition-colors"
+              >
+                ⚙️ Settings
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* API Key Modal */}
+      {showApiKeyInput && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">API Key Required</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Enter your Google Gemini API key to generate study materials.
+              <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                Get one here →
+              </a>
+            </p>
+            <input
+              type="password"
+              value={tempApiKey}
+              onChange={(e) => setTempApiKey(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSaveApiKey()}
+              placeholder="AIza..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleSaveApiKey}
+                disabled={!tempApiKey.trim()}
+                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                Save API Key
+              </button>
+              {apiKey && (
+                <button
+                  onClick={() => setShowApiKeyInput(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-semibold"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-4">
+              🔒 Your API key is stored locally in your browser and never sent to our servers.
+            </p>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        
+
         {/* ERROR STATE */}
         {appState === AppState.ERROR && (
-           <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 mt-0.5 mr-3" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-             </svg>
-             <div>
-               <h3 className="text-sm font-medium text-red-800">Generation Failed</h3>
-               <p className="text-sm text-red-600 mt-1">{error}</p>
-               <button onClick={handleReset} className="mt-2 text-sm font-semibold text-red-700 underline">Try Again</button>
-             </div>
-           </div>
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 mt-0.5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Generation Failed</h3>
+              <p className="text-sm text-red-600 mt-1">{error}</p>
+              <button onClick={handleReset} className="mt-2 text-sm font-semibold text-red-700 underline">Try Again</button>
+            </div>
+          </div>
         )}
 
         {/* LOADING STATE */}
@@ -90,7 +160,7 @@ const App: React.FC = () => {
               The AI is currently watching "{selectedPlaylist.title}" and extracting flashcards, MCQs, and True/False questions.
             </p>
             <div className="w-full max-w-md bg-gray-200 rounded-full h-2.5 overflow-hidden">
-               <div className="bg-blue-600 h-2.5 rounded-full w-2/3 animate-pulse"></div>
+              <div className="bg-blue-600 h-2.5 rounded-full w-2/3 animate-pulse"></div>
             </div>
             <p className="text-xs text-gray-400 mt-4">This usually takes about 10-20 seconds.</p>
           </div>
@@ -115,9 +185,9 @@ const App: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {PLAYLISTS.map((playlist) => (
-                <PlaylistCard 
-                  key={playlist.id} 
-                  playlist={playlist} 
+                <PlaylistCard
+                  key={playlist.id}
+                  playlist={playlist}
                   onSelect={handleSelectPlaylist}
                   disabled={false}
                 />
