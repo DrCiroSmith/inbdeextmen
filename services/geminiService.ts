@@ -3,36 +3,39 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import { Playlist, StudyData } from '../types';
 
 const HEAD_AND_NECK_VIDEOS = [
-  { title: "Embryology & Pharyngeal Arches", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8" },
-  { title: "Bones of the Skull", url: "https://www.youtube.com/watch?v=NQtXvfJCtxo" },
-  { title: "Foramina of the Skull", url: "https://www.youtube.com/watch?v=Yc0xxRAuwG0" },
-  { title: "Fossae of the Skull", url: "https://www.youtube.com/watch?v=z7TIYC6mfo4" },
-  { title: "Fascial Space Infections", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8&list=PLVmK7sDA_arEKUbDuKoqUMSnIMNBXYiqV&index=5" },
-  { title: "Muscles of Mastication", url: "https://www.youtube.com/watch?v=reqF1EORKSg" },
-  { title: "Muscles of Facial Expression", url: "https://www.youtube.com/watch?v=cqoOAz8i6nI" },
-  { title: "Triangles of the Neck & Neck Muscles", url: "https://www.youtube.com/watch?v=Ewj3Wf9D4zw" },
-  { title: "Tongue Muscles", url: "https://www.youtube.com/watch?v=Zz3cO2MhwhQ" },
-  { title: "Soft Palate Muscles", url: "https://www.youtube.com/watch?v=4dIGQ3L2YG4" },
-  { title: "Pharmacology | Analgesics", url: "https://www.youtube.com/watch?v=0_u-mE3_r_M" },
-  { title: "Pharmacology | Pharmacokinetics", url: "https://www.youtube.com/watch?v=53s41reBCFQ" },
-  { title: "Pharmacology | Pharmacodynamics", url: "https://www.youtube.com/watch?v=Cq5Zi_3mrfo" },
-  { title: "Pharmacology | Autonomic Nervous System", url: "https://www.youtube.com/watch?v=J98_052yC20" },
-  { title: "Pharmacology | Antifungals, Antivirals, and Antiretrovirals", url: "https://www.youtube.com/watch?v=4q7_1yO0-d8" },
-  { title: "Pharmacology | Antianxiety and Antidepressants", url: "https://www.youtube.com/watch?v=t5Jm-t--3pE" },
-  { title: "Pharmacology | PRACTICE QUESTIONS", url: "https://www.youtube.com/watch?v=3g5YyYy-Y-s" }
+  { title: "Head & Neck Anatomy | Embryology & Pharyngeal Arches | INBDE", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8" },
+  { title: "Head & Neck Anatomy | Bones of the Skull | INBDE", url: "https://www.youtube.com/watch?v=NQtXvfJCtxo" },
+  { title: "Head & Neck Anatomy | Foramina of the Skull | INBDE", url: "https://www.youtube.com/watch?v=Yc0xxRAuwG0" },
+  { title: "Head & Neck Anatomy | Fossae of the Skull | INBDE", url: "https://www.youtube.com/watch?v=z7TIYC6mfo4" },
+  { title: "Head & Neck Anatomy | Fascial Space Infections | INBDE", url: "https://www.youtube.com/watch?v=wux4X9AGOCg" },
+  { title: "Head & Neck Anatomy | Muscles of Mastication | INBDE", url: "https://www.youtube.com/watch?v=reqF1EORKSg" },
+  { title: "Head & Neck Anatomy | Muscles of Facial Expression | INBDE", url: "https://www.youtube.com/watch?v=cqoOAz8i6nI" },
+  { title: "Head & Neck Anatomy | Triangles of the Neck & Neck Muscles | INBDE", url: "https://www.youtube.com/watch?v=Ewj3Wf9D4zw" },
+  { title: "Head & Neck Anatomy | Tongue Muscles | INBDE", url: "https://www.youtube.com/watch?v=Zz3cO2MhwhQ" },
+  { title: "Head & Neck Anatomy | Soft Palate Muscles | INBDE", url: "https://www.youtube.com/watch?v=4dIGQ3L2YG4" },
+  { title: "Head & Neck Anatomy | Pharynx & Larynx Muscles | INBDE", url: "https://www.youtube.com/watch?v=hPmpU72Cgsg" },
+  { title: "Head & Neck Anatomy | Ear Muscles | INBDE", url: "https://www.youtube.com/watch?v=VTDQt-KO0YQ" },
+  { title: "Head & Neck Anatomy | Eye Muscles | INBDE", url: "https://www.youtube.com/watch?v=FhHqKGLeZkI" },
+  { title: "Head & Neck Anatomy | Cranial Nerves | INBDE", url: "https://www.youtube.com/watch?v=1gB90u2JOYg" },
+  { title: "Head & Neck Anatomy | Salivary Glands | INBDE", url: "https://www.youtube.com/watch?v=EF-YTC5yHi0" },
+  { title: "Head & Neck Anatomy | TMJ Anatomy | INBDE", url: "https://www.youtube.com/watch?v=UjT_8kOnITE" },
+  { title: "Head & Neck Anatomy | Craniofacial Arteries | INBDE", url: "https://www.youtube.com/watch?v=m97am1kHpoo" },
+  { title: "Head & Neck Anatomy | Craniofacial Veins | INBDE", url: "https://www.youtube.com/watch?v=xcyUm5ZEzng" },
+  { title: "Head & Neck Anatomy | Craniofacial Lymphatics | INBDE", url: "https://www.youtube.com/watch?v=BODFN9kzQA8" },
+  { title: "Head & Neck Anatomy | PRACTICE QUESTIONS | INBDE", url: "https://www.youtube.com/watch?v=PG6ZFCYt5S4" }
 ];
 
 const PHARMACOLOGY_VIDEOS = [
-  { title: "Pharmacology | Pharmacokinetics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=5Ujl1VbAcgc" },
+  { title: "Local Anesthetics | Categories and Calculations | INBDE, ADAT", url: "https://www.youtube.com/watch?v=5Ujl1VbAcgc" },
+  { title: "Local Anesthetics | Injections and Techniques | INBDE, ADAT", url: "https://www.youtube.com/watch?v=eWXuKFSnkIY" },
+  { title: "Pharmacology | Antibiotics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=e72G5VKkJng" },
+  { title: "Pharmacology | Analgesics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=ZnbDfR2g9rw" },
+  { title: "Pharmacology | Pharmacokinetics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=53s41reBCFQ" },
   { title: "Pharmacology | Pharmacodynamics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Cq5Zi_3mrfo" },
-  { title: "Pharmacology | Autonomic Nervous System | INBDE, ADAT", url: "https://www.youtube.com/watch?v=J98_052yC20" },
-  { title: "Pharmacology | Analgesics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=0_u-mE3_r_M" },
-  { title: "Pharmacology | Antibiotics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=4q7_1yO0-d8" },
-  { title: "Pharmacology | Antifungals & Antivirals | INBDE, ADAT", url: "https://www.youtube.com/watch?v=4q7_1yO0-d8" },
-  { title: "Pharmacology | Cardiovascular Drugs | INBDE, ADAT", url: "https://www.youtube.com/watch?v=t5Jm-t--3pE" },
-  { title: "Pharmacology | Psychotropic Drugs | INBDE, ADAT", url: "https://www.youtube.com/watch?v=t5Jm-t--3pE" },
-  { title: "Pharmacology | General Anesthetics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=3g5YyYy-Y-s" },
-  { title: "Pharmacology | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=3g5YyYy-Y-s" }
+  { title: "Pharmacology | Autonomic Nervous System | INBDE, ADAT", url: "https://www.youtube.com/watch?v=md1vLC2Kwag" },
+  { title: "Pharmacology | Cardiovascular Pharmacology | INBDE, ADAT", url: "https://www.youtube.com/watch?v=caJZweuzQO8" },
+  { title: "Pharmacology | Central Nervous System | INBDE, ADAT", url: "https://www.youtube.com/watch?v=XcOlxfYynGk" },
+  { title: "Pharmacology | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Fng3PLGg6ZI" }
 ];
 
 const ORAL_RADIOLOGY_VIDEOS = [
