@@ -74,23 +74,25 @@ const generatePrompt = (playlist: Playlist) => {
   }
 
   return `
-    You are an expert tutor specializing in the INBDE. 
-    TASK: Use Google Search to access the YouTube playlist: ${playlist.url}.
+    You are an expert tutor specializing in the INBDE dental examination.
     
-    1. Identify EVERY video in this playlist ("${playlist.title}").
+    TASK: Generate comprehensive study materials for the "${playlist.title}" playlist.
+    
     ${videoContext}
-    2. For each video, retrieve the specific YouTube URL. ${(isHeadAndNeck || isPharmacology || isOralRadiology) ? 'Use the provided URLs above.' : '(e.g., https://www.youtube.com/watch?v=...).'}
-    3. Generate a comprehensive, independent study JSON module for EACH video found.
-
-    Each module MUST contain:
-    - "videoTitle": The exact title of the video.
-    - "videoUrl": The specific YouTube link to that video.
-    - "summary": A detailed high-yield summary of the clinical concepts.
-    - "flashcards": 5 detailed Flashcards (Front/Back).
-    - "multipleChoice": 3 Scenario-based MCQs with 4 options, correct answer, and explanation.
-    - "trueFalse": 3 True/False statements with reasoning.
-
-    The output MUST be a single JSON object with a "modules" array containing one entry for every video in the playlist.
+    
+    For EACH video listed above, create an independent study module with:
+    - "videoTitle": The exact title of the video
+    - "videoUrl": The specific YouTube link provided above
+    - "summary": A detailed 3-4 paragraph high-yield summary of key clinical concepts
+    - "flashcards": Exactly 5 detailed flashcards (Front/Back format)
+    - "multipleChoice": Exactly 3 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation
+    - "trueFalse": Exactly 3 True/False statements with detailed reasoning
+    
+    CRITICAL: The output MUST be a valid JSON object with:
+    - "playlistTitle": "${playlist.title}"
+    - "playlistUrl": "${playlist.url}"
+    - "modules": An array containing one object for EACH video above
+    
     Ensure 100% accuracy to Dr. Ryan's Mental Dental curriculum.
   `;
 };
@@ -115,7 +117,8 @@ const studyDataSchema: Schema = {
               properties: {
                 front: { type: Type.STRING },
                 back: { type: Type.STRING }
-              }
+              },
+              required: ["front", "back"]
             }
           },
           multipleChoice: {
@@ -127,7 +130,8 @@ const studyDataSchema: Schema = {
                 options: { type: Type.ARRAY, items: { type: Type.STRING } },
                 correctAnswer: { type: Type.STRING },
                 explanation: { type: Type.STRING }
-              }
+              },
+              required: ["question", "options", "correctAnswer", "explanation"]
             }
           },
           trueFalse: {
@@ -138,7 +142,8 @@ const studyDataSchema: Schema = {
                 statement: { type: Type.STRING },
                 isTrue: { type: Type.BOOLEAN },
                 explanation: { type: Type.STRING }
-              }
+              },
+              required: ["statement", "isTrue", "explanation"]
             }
           }
         },
@@ -146,21 +151,21 @@ const studyDataSchema: Schema = {
       }
     }
   },
-  required: ["playlistTitle", "modules"]
+  required: ["playlistTitle", "playlistUrl", "modules"]
 };
 
 export const generatePlaylistData = async (apiKey: string, playlist: Playlist): Promise<StudyData> => {
   const ai = new GoogleGenAI({ apiKey });
 
   try {
+    // Use gemini-1.5-flash-latest which is stable and has better quota
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-1.5-flash-latest',
       contents: generatePrompt(playlist),
       config: {
         responseMimeType: 'application/json',
         responseSchema: studyDataSchema,
-        temperature: 0.1,
-        tools: [{ googleSearch: {} }]
+        temperature: 0.2
       }
     });
 
@@ -168,6 +173,8 @@ export const generatePlaylistData = async (apiKey: string, playlist: Playlist): 
     if (!text) throw new Error("No data returned from Gemini");
 
     const data = JSON.parse(text) as StudyData;
+
+    // Ensure required fields
     data.playlistTitle = playlist.title;
     data.playlistUrl = playlist.url;
 
