@@ -42,87 +42,57 @@ const ORAL_PATHOLOGY_VIDEOS = [
   { title: "Oral Pathology | Connective Tissue Malignant Tumors | INBDE, ADAT", url: "https://www.youtube.com/watch?v=M4l0Vr-gR7o" },
   { title: "Oral Pathology | Salivary Gland Reactive Diseases | INBDE, ADAT", url: "https://www.youtube.com/watch?v=AMV0fQn2QWM" },
   { title: "Oral Pathology | Salivary Gland Benign Diseases | INBDE, ADAT", url: "https://www.youtube.com/watch?v=_8xHh1tk7jY" },
-  { title: "Oral Pathology | Salivary Gland Malignant Diseases | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Uxv9lSQGiws" },
-  { title: "Oral Pathology | Lymphoid Neoplasms | INBDE, ADAT", url: "https://www.youtube.com/watch?v=uMu231idsR0" },
-  { title: "Oral Pathology | Odontogenic Cysts | INBDE, ADAT", url: "https://www.youtube.com/watch?v=UPjbNPz_WXs" },
-  { title: "Oral Pathology | Odontogenic Tumors | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Wp26KRnGfGg" },
-  { title: "Oral Pathology | Fibro-Osseous Lesions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=qHpoMDLKGDo" },
-  { title: "Oral Pathology | Giant Cell Lesions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=fRahDN7_wDg" },
-
-  ${ videoContext }
-    
-    For EACH video listed above, create an independent study module with:
-- "videoTitle": The exact title of the video
-  - "videoUrl": The specific YouTube link provided above
-    - "summary": A detailed 3 - 4 paragraph high - yield summary of key clinical concepts
-      - "flashcards": Exactly 5 detailed flashcards(Front / Back format)
-        - "multipleChoice": Exactly 3 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation
-          - "trueFalse": Exactly 3 True / False statements with detailed reasoning
-
-CRITICAL: The output MUST be a valid JSON object with:
-- "playlistTitle": "${playlist.title}"
-  - "playlistUrl": "${playlist.url}"
-    - "modules": An array containing one object for EACH video above
-    
-    Ensure 100 % accuracy to Dr.Ryan's Mental Dental curriculum.
-  `;
-};
-
-const studyDataSchema: Schema = {
-  type: Type.OBJECT,
-  properties: {
-    playlistTitle: { type: Type.STRING },
-    playlistUrl: { type: Type.STRING },
-    modules: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          videoTitle: { type: Type.STRING },
-          videoUrl: { type: Type.STRING },
-          summary: { type: Type.STRING },
-          flashcards: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                front: { type: Type.STRING },
-                back: { type: Type.STRING }
-              },
-              required: ["front", "back"]
-            }
-          },
-          multipleChoice: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                question: { type: Type.STRING },
-                options: { type: Type.ARRAY, items: { type: Type.STRING } },
-                correctAnswer: { type: Type.STRING },
-                explanation: { type: Type.STRING }
-              },
-              required: ["question", "options", "correctAnswer", "explanation"]
-            }
-          },
-          trueFalse: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                statement: { type: Type.STRING },
-                isTrue: { type: Type.BOOLEAN },
-                explanation: { type: Type.STRING }
-              },
-              required: ["statement", "isTrue", "explanation"]
-            }
+  playlistUrl: { type: Type.STRING },
+  modules: {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        videoTitle: { type: Type.STRING },
+        videoUrl: { type: Type.STRING },
+        summary: { type: Type.STRING },
+        flashcards: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              front: { type: Type.STRING },
+              back: { type: Type.STRING }
+            },
+            required: ["front", "back"]
           }
         },
-        required: ["videoTitle", "videoUrl", "summary", "flashcards", "multipleChoice", "trueFalse"]
-      }
+        multipleChoice: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              question: { type: Type.STRING },
+              options: { type: Type.ARRAY, items: { type: Type.STRING } },
+              correctAnswer: { type: Type.STRING },
+              explanation: { type: Type.STRING }
+            },
+            required: ["question", "options", "correctAnswer", "explanation"]
+          }
+        },
+        trueFalse: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              statement: { type: Type.STRING },
+              isTrue: { type: Type.BOOLEAN },
+              explanation: { type: Type.STRING }
+            },
+            required: ["statement", "isTrue", "explanation"]
+          }
+        }
+      },
+      required: ["videoTitle", "videoUrl", "summary", "flashcards", "multipleChoice", "trueFalse"]
     }
+  }
   },
-  required: ["playlistTitle", "playlistUrl", "modules"]
+required: ["playlistTitle", "playlistUrl", "modules"]
 };
 
 export const generatePlaylistData = async (apiKey: string, playlist: Playlist): Promise<StudyData> => {
