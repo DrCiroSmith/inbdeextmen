@@ -42,5 +42,6 @@ export enum AppState {
   IDLE = 'IDLE',
   GENERATING = 'GENERATING',
   COMPLETE = 'COMPLETE',
+  STUDY = 'STUDY',
   ERROR = 'ERROR'
 }

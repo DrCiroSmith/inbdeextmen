@@ -3,6 +3,7 @@ import { PLAYLISTS } from './constants';
 import { Playlist, AppState, StudyData } from './types';
 import { PlaylistCard } from './components/PlaylistCard';
 import { JsonViewer } from './components/JsonViewer';
+import { StudyMode } from './components/StudyMode';
 import { generatePlaylistData } from './services/geminiService';
 
 const App: React.FC = () => {
@@ -56,6 +57,14 @@ const App: React.FC = () => {
     setGeneratedData(null);
     setSelectedPlaylist(null);
     setError(null);
+  };
+
+  const handleStartStudy = () => {
+    setAppState(AppState.STUDY);
+  };
+
+  const handleExitStudy = () => {
+    setAppState(AppState.COMPLETE);
   };
 
   return (
@@ -166,9 +175,24 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {/* STUDY MODE */}
+        {appState === AppState.STUDY && generatedData && (
+          <StudyMode data={generatedData} onExit={handleExitStudy} />
+        )}
+
         {/* COMPLETION STATE */}
         {appState === AppState.COMPLETE && generatedData && (
-          <JsonViewer data={generatedData} onReset={handleReset} />
+          <div className="space-y-8">
+            <div className="flex justify-center">
+              <button
+                onClick={handleStartStudy}
+                className="bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 transition-all transform hover:scale-105 flex items-center gap-3"
+              >
+                <span>🎓</span> Start Studying Now
+              </button>
+            </div>
+            <JsonViewer data={generatedData} onReset={handleReset} />
+          </div>
         )}
 
         {/* SELECTION STATE */}
