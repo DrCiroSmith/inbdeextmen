@@ -36,6 +36,11 @@ export interface StudyData {
   flashcards: Flashcard[];
   multipleChoice: MultipleChoice[];
   trueFalse: TrueFalse[];
+  // Cache metadata
+  isCached?: boolean;
+  generatedAt?: string;
+  lastUpdated?: string;
+  generationCount?: number; // How many times re-analyzed
 }
 
 export enum AppState {

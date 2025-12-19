@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { YoutubeTranscript } from 'youtube-transcript';
 import { Playlist, StudyData, VideoInfo } from '../types';
+import { getCachedStudyData, saveCachedStudyData, mergeStudyData } from './cacheService';
 
 // Export video lists for use in VideoSelector
 export const HEAD_AND_NECK_VIDEOS = [
@@ -325,8 +326,20 @@ const studyDataSchema: Schema = {
 export const generateVideoStudyData = async (
   apiKey: string,
   playlist: Playlist,
-  video: VideoInfo
+  video: VideoInfo,
+  forceRegenerate = false
 ): Promise<StudyData> => {
+  // Check cache first unless force regenerate
+  if (!forceRegenerate) {
+    const cached = getCachedStudyData(video.url);
+    if (cached) {
+      console.log('Loading from cache:', video.title);
+      return cached;
+    }
+  }
+
+  console.log(forceRegenerate ? 'Re-analyzing:' : 'Generating new:', video.title);
+
   const ai = new GoogleGenAI({ apiKey });
 
   // Fetch transcript for this specific video
@@ -347,9 +360,9 @@ export const generateVideoStudyData = async (
     - "videoUrl": "${video.url}"
     - "playlistTitle": "${playlist.title}"
     - "summary": A detailed 3-4 paragraph high-yield summary of key clinical concepts from this video
-    - "flashcards": Exactly 10 detailed flashcards (Front/Back format) based on the video content${transcript ? ' and transcript' : ''}
-    - "multipleChoice": Exactly 5 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation
-    - "trueFalse": Exactly 5 True/False statements with detailed reasoning
+    - "flashcards": Exactly 10 detailed flashcards (Front/Back format) based on the video content${transcript ? ' and transcript' : ''}. ${forceRegenerate ? 'Generate DIFFERENT flashcards from what might already exist.' : ''}
+    - "multipleChoice": Exactly 5 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation. ${forceRegenerate ? 'Create DIFFERENT questions from what might already exist.' : ''}
+    - "trueFalse": Exactly 5 True/False statements with detailed reasoning. ${forceRegenerate ? 'Create DIFFERENT statements from what might already exist.' : ''}
     
     Ensure 100% accuracy to Dr. Ryan's Mental Dental curriculum.
   `;
@@ -361,19 +374,31 @@ export const generateVideoStudyData = async (
       config: {
         responseMimeType: 'application/json',
         responseSchema: studyDataSchema,
-        temperature: 0.2
+        temperature: forceRegenerate ? 0.7 : 0.2 // Higher temperature for re-analyze to get variety
       }
     });
 
     const text = response.text;
     if (!text) throw new Error("No data returned from Gemini");
 
-    const data = JSON.parse(text) as StudyData;
+    let data = JSON.parse(text) as StudyData;
 
     // Ensure required fields
     data.playlistTitle = playlist.title;
     data.videoTitle = video.title;
     data.videoUrl = video.url;
+
+    // If re-analyzing, merge with existing cache
+    if (forceRegenerate) {
+      const existing = getCachedStudyData(video.url);
+      if (existing) {
+        console.log('Merging with existing data...');
+        data = mergeStudyData(existing, data);
+      }
+    }
+
+    // Save to cache
+    saveCachedStudyData(video.url, data);
 
     return data;
   } catch (error) {
