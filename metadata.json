@@ -1,0 +1,5 @@
+{
+  "name": "Mental Dental AI Extractor",
+  "description": "An AI-powered tool that generates INBDE study materials (JSON) from Mental Dental playlist topics for import into study platforms.",
+  "requestFramePermissions": []
+}
