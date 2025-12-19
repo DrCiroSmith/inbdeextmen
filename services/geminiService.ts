@@ -160,7 +160,7 @@ export const generatePlaylistData = async (apiKey: string, playlist: Playlist): 
   try {
     // Use gemini-1.5-flash-latest which is stable and has better quota
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       contents: generatePrompt(playlist),
       config: {
         responseMimeType: 'application/json',
