@@ -5,6 +5,11 @@ export interface Playlist {
   description: string;
 }
 
+export interface VideoInfo {
+  title: string;
+  url: string;
+}
+
 export interface Flashcard {
   front: string;
   back: string;
@@ -23,7 +28,8 @@ export interface TrueFalse {
   explanation: string;
 }
 
-export interface VideoModule {
+export interface StudyData {
+  playlistTitle: string;
   videoTitle: string;
   videoUrl: string;
   summary: string;
@@ -32,14 +38,9 @@ export interface VideoModule {
   trueFalse: TrueFalse[];
 }
 
-export interface StudyData {
-  playlistTitle: string;
-  playlistUrl: string;
-  modules: VideoModule[];
-}
-
 export enum AppState {
   IDLE = 'IDLE',
+  VIDEO_SELECTION = 'VIDEO_SELECTION',
   GENERATING = 'GENERATING',
   COMPLETE = 'COMPLETE',
   STUDY = 'STUDY',

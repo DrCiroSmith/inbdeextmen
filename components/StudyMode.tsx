@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StudyData, VideoModule, Flashcard, MultipleChoice } from '../types';
+import { StudyData } from '../types';
 
 interface StudyModeProps {
     data: StudyData;
@@ -10,25 +10,20 @@ type Mode = 'flashcards' | 'quiz';
 
 export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
     const [mode, setMode] = useState<Mode>('flashcards');
-    const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
     const [showResults, setShowResults] = useState(false);
 
-    const currentModule = data.modules[currentModuleIndex];
-    const allFlashcards = data.modules.flatMap(m => m.flashcards);
-    const allQuizzes = data.modules.flatMap(m => m.multipleChoice);
-
     // Flashcard Logic
     const handleNextCard = () => {
         setIsFlipped(false);
-        setCurrentCardIndex((prev) => (prev + 1) % allFlashcards.length);
+        setCurrentCardIndex((prev) => (prev + 1) % data.flashcards.length);
     };
 
     const handlePrevCard = () => {
         setIsFlipped(false);
-        setCurrentCardIndex((prev) => (prev - 1 + allFlashcards.length) % allFlashcards.length);
+        setCurrentCardIndex((prev) => (prev - 1 + data.flashcards.length) % data.flashcards.length);
     };
 
     // Quiz Logic
@@ -39,7 +34,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
 
     const calculateScore = () => {
         let correct = 0;
-        allQuizzes.forEach((q, i) => {
+        data.multipleChoice.forEach((q, i) => {
             if (quizAnswers[i] === q.correctAnswer) correct++;
         });
         return correct;
@@ -50,8 +45,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{data.playlistTitle}</h2>
-                    <p className="text-gray-500">Study Mode</p>
+                    <h2 className="text-2xl font-bold text-gray-900">{data.videoTitle}</h2>
+                    <p className="text-gray-500 text-sm">{data.playlistTitle}</p>
                 </div>
                 <button
                     onClick={onExit}
@@ -70,7 +65,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
-                    Flashcards ({allFlashcards.length})
+                    Flashcards ({data.flashcards.length})
                 </button>
                 <button
                     onClick={() => setMode('quiz')}
@@ -79,7 +74,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
-                    Quiz ({allQuizzes.length})
+                    Quiz ({data.multipleChoice.length})
                 </button>
             </div>
 
@@ -95,7 +90,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             <div className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center backface-hidden border-2 border-transparent group-hover:border-blue-100 transition-colors">
                                 <span className="text-sm text-gray-400 uppercase tracking-wider mb-4">Front</span>
                                 <p className="text-2xl text-center font-medium text-gray-800">
-                                    {allFlashcards[currentCardIndex]?.front}
+                                    {data.flashcards[currentCardIndex]?.front}
                                 </p>
                                 <p className="absolute bottom-6 text-sm text-gray-400">Click to flip</p>
                             </div>
@@ -104,7 +99,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             <div className="absolute inset-0 w-full h-full bg-blue-50 rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center backface-hidden rotate-y-180 border-2 border-blue-100">
                                 <span className="text-sm text-blue-400 uppercase tracking-wider mb-4">Back</span>
                                 <p className="text-xl text-center text-gray-800 leading-relaxed">
-                                    {allFlashcards[currentCardIndex]?.back}
+                                    {data.flashcards[currentCardIndex]?.back}
                                 </p>
                             </div>
                         </div>
@@ -118,7 +113,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             ← Previous
                         </button>
                         <span className="text-gray-500 font-medium">
-                            {currentCardIndex + 1} / {allFlashcards.length}
+                            {currentCardIndex + 1} / {data.flashcards.length}
                         </span>
                         <button
                             onClick={handleNextCard}
@@ -135,7 +130,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                 <div className="max-w-3xl mx-auto">
                     {!showResults ? (
                         <div className="space-y-8">
-                            {allQuizzes.map((quiz, index) => (
+                            {data.multipleChoice.map((quiz, index) => (
                                 <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                     <div className="flex items-start gap-4">
                                         <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
@@ -165,7 +160,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             <div className="sticky bottom-6 flex justify-center pt-4">
                                 <button
                                     onClick={() => setShowResults(true)}
-                                    disabled={Object.keys(quizAnswers).length < allQuizzes.length}
+                                    disabled={Object.keys(quizAnswers).length < data.multipleChoice.length}
                                     className="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"
                                 >
                                     Submit Quiz
@@ -177,7 +172,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-8">
                                 <h3 className="text-3xl font-bold text-gray-900 mb-2">Quiz Complete!</h3>
                                 <p className="text-xl text-gray-600">
-                                    You scored <span className="text-blue-600 font-bold">{calculateScore()}</span> out of {allQuizzes.length}
+                                    You scored <span className="text-blue-600 font-bold">{calculateScore()}</span> out of {data.multipleChoice.length}
                                 </p>
                                 <button
                                     onClick={() => {
@@ -190,7 +185,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                                 </button>
                             </div>
 
-                            {allQuizzes.map((quiz, index) => (
+                            {data.multipleChoice.map((quiz, index) => (
                                 <div key={index} className={`rounded-xl border p-6 ${quizAnswers[index] === quiz.correctAnswer
                                         ? 'bg-green-50 border-green-200'
                                         : 'bg-red-50 border-red-200'

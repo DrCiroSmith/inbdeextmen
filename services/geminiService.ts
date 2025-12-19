@@ -1,8 +1,9 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { YoutubeTranscript } from 'youtube-transcript';
-import { Playlist, StudyData } from '../types';
+import { Playlist, StudyData, VideoInfo } from '../types';
 
-const HEAD_AND_NECK_VIDEOS = [
+// Export video lists for use in VideoSelector
+export const HEAD_AND_NECK_VIDEOS = [
   { title: "Head & Neck Anatomy | Embryology & Pharyngeal Arches | INBDE", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8" },
   { title: "Head & Neck Anatomy | Bones of the Skull | INBDE", url: "https://www.youtube.com/watch?v=NQtXvfJCtxo" },
   { title: "Head & Neck Anatomy | Foramina of the Skull | INBDE", url: "https://www.youtube.com/watch?v=Yc0xxRAuwG0" },
@@ -25,7 +26,7 @@ const HEAD_AND_NECK_VIDEOS = [
   { title: "Head & Neck Anatomy | PRACTICE QUESTIONS | INBDE", url: "https://www.youtube.com/watch?v=PG6ZFCYt5S4" }
 ];
 
-const PHARMACOLOGY_VIDEOS = [
+export const PHARMACOLOGY_VIDEOS = [
   { title: "Local Anesthetics | Categories and Calculations | INBDE, ADAT", url: "https://www.youtube.com/watch?v=5Ujl1VbAcgc" },
   { title: "Local Anesthetics | Injections and Techniques | INBDE, ADAT", url: "https://www.youtube.com/watch?v=eWXuKFSnkIY" },
   { title: "Pharmacology | Antibiotics | INBDE, ADAT", url: "https://www.youtube.com/watch?v=e72G5VKkJng" },
@@ -38,7 +39,7 @@ const PHARMACOLOGY_VIDEOS = [
   { title: "Pharmacology | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Fng3PLGg6ZI" }
 ];
 
-const ORAL_RADIOLOGY_VIDEOS = [
+export const ORAL_RADIOLOGY_VIDEOS = [
   { title: "Fundamentals of X-Rays", url: "https://www.youtube.com/watch?v=SZFqei91R9w" },
   { title: "X-Ray Settings", url: "https://www.youtube.com/watch?v=BxHmsb1Gnyg" },
   { title: "Radiation Dose", url: "https://www.youtube.com/watch?v=GxHsvxywvtE" },
@@ -48,7 +49,7 @@ const ORAL_RADIOLOGY_VIDEOS = [
   { title: "PRACTICE QUESTIONS", url: "https://www.youtube.com/watch?v=wDTtl31n1m4" }
 ];
 
-const ORAL_PATHOLOGY_VIDEOS = [
+export const ORAL_PATHOLOGY_VIDEOS = [
   { title: "Oral Pathology | Developmental Conditions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=3zcuZ6U7vQA" },
   { title: "Oral Pathology | Mucosal Reactive Lesions | INBDE, ADAT", url: "https://www.youtube.com/watch?v=wzthel3wEcw" },
   { title: "Oral Pathology | Mucosal Infections | INBDE, ADAT", url: "https://www.youtube.com/watch?v=X1rF7Iv5Q_k" },
@@ -71,7 +72,7 @@ const ORAL_PATHOLOGY_VIDEOS = [
   { title: "Oral Pathology | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=r6gbhR7JTMo" }
 ];
 
-const PATIENT_MANAGEMENT_VIDEOS = [
+export const PATIENT_MANAGEMENT_VIDEOS = [
   { title: "Patient Management | Ethics & Professional Liability | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Ae4-HGCl2ro" },
   { title: "Patient Management | Communication & Interpersonal Skills | INBDE, ADAT", url: "https://www.youtube.com/watch?v=OQbQOdynzBs" },
   { title: "Patient Management | Health Behavior Change | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Vs84cKOX06M" },
@@ -85,7 +86,7 @@ const PATIENT_MANAGEMENT_VIDEOS = [
   { title: "Patient Management | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=8jpO19qalIo" }
 ];
 
-const ORAL_MEDICINE_VIDEOS = [
+export const ORAL_MEDICINE_VIDEOS = [
   { title: "Oral Medicine | Antibiotic Prophylaxis | INBDE", url: "https://www.youtube.com/watch?v=E4waBH2mT5E" },
   { title: "Oral Medicine | Hypertension | INBDE", url: "https://www.youtube.com/watch?v=GpcYL0Aep38" },
   { title: "Oral Medicine | Diabetes | INBDE", url: "https://www.youtube.com/watch?v=MLmLr0KW3f0" },
@@ -113,7 +114,7 @@ const ORAL_MEDICINE_VIDEOS = [
   { title: "Oral Medicine | PRACTICE QUESTIONS | INBDE", url: "https://www.youtube.com/watch?v=88TcsTT2ezQ" }
 ];
 
-const BIOSTATISTICS_VIDEOS = [
+export const BIOSTATISTICS_VIDEOS = [
   { title: "Biostatistics | Introduction to Clinical Research | INBDE, ADAT", url: "https://www.youtube.com/watch?v=a7i08EIgj4Y" },
   { title: "Biostatistics | Variables | INBDE, ADAT", url: "https://www.youtube.com/watch?v=esuclyl6OiA" },
   { title: "Biostatistics | Sampling & Allocation | INBDE, ADAT", url: "https://www.youtube.com/watch?v=uIbLH-8_wys" },
@@ -121,7 +122,7 @@ const BIOSTATISTICS_VIDEOS = [
   { title: "Biostatistics | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=WfeGzK_m0Vg" }
 ];
 
-const ORTHODONTICS_VIDEOS = [
+export const ORTHODONTICS_VIDEOS = [
   { title: "Orthodontics | Growth & Development | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Hb1b3YPHiTE" },
   { title: "Orthodontics | Craniofacial Anomalies | INBDE, ADAT", url: "https://www.youtube.com/watch?v=jMx8Gu7QxpM" },
   { title: "Orthodontics | Development of Occlusion | INBDE, ADAT", url: "https://www.youtube.com/watch?v=ZGge3rNtO60" },
@@ -136,7 +137,7 @@ const ORTHODONTICS_VIDEOS = [
   { title: "Orthodontics | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=PnBGIMJeCQ0" }
 ];
 
-const PERIODONTICS_VIDEOS = [
+export const PERIODONTICS_VIDEOS = [
   { title: "Periodontics | Diagnosis & Periodontal Exam | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Pm8s9aqs7Ug" },
   { title: "Periodontics | Classifications | INBDE, ADAT", url: "https://www.youtube.com/watch?v=mAKlXxrykbg" },
   { title: "Periodontics | New Classification System | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Yeq6LO3q4Vo" },
@@ -153,7 +154,7 @@ const PERIODONTICS_VIDEOS = [
   { title: "Periodontics | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=BAHu4lPXn64" }
 ];
 
-const ENDODONTICS_VIDEOS = [
+export const ENDODONTICS_VIDEOS = [
   { title: "Endodontics | Pulp Biology and Tooth Pain | INBDE, ADAT", url: "https://www.youtube.com/watch?v=7EsHL8Sacg0" },
   { title: "Endodontics | Pulpal and Periapical Diagnoses | INBDE, ADAT", url: "https://www.youtube.com/watch?v=DYUnnxaogoI" },
   { title: "Endodontics | Root Canal Treatment | INBDE, ADAT", url: "https://www.youtube.com/watch?v=5PF3Ju25LNc" },
@@ -165,7 +166,7 @@ const ENDODONTICS_VIDEOS = [
   { title: "Endodontics | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=crA3cOwKXmc" }
 ];
 
-const PROSTHODONTICS_VIDEOS = [
+export const PROSTHODONTICS_VIDEOS = [
   { title: "Prosthodontics | General Considerations | INBDE, ADAT", url: "https://www.youtube.com/watch?v=BgkDDtOztEQ" },
   { title: "Prosthodontics | Occlusion & Articulators | INBDE, ADAT", url: "https://www.youtube.com/watch?v=0FL4KBfLlJg" },
   { title: "Prosthodontics | Maxillary Edentulous Anatomy | INBDE, ADAT", url: "https://www.youtube.com/watch?v=OhqheV6Jl3k" },
@@ -193,7 +194,7 @@ const PROSTHODONTICS_VIDEOS = [
   { title: "Prosthodontics | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=MGwlw0iIDRE" }
 ];
 
-const PEDIATRIC_DENTISTRY_VIDEOS = [
+export const PEDIATRIC_DENTISTRY_VIDEOS = [
   { title: "Pediatric Dentistry | Tooth Development and Eruption | INBDE, ADAT", url: "https://www.youtube.com/watch?v=PLAMJJfZ-eo" },
   { title: "Pediatric Dentistry | Developmental Disturbances of Teeth | INBDE, ADAT", url: "https://www.youtube.com/watch?v=_e_B8rTl_rU" },
   { title: "Pediatric Dentistry | Primary Tooth Anatomy | INBDE, ADAT", url: "https://www.youtube.com/watch?v=PsubtLiLToU" },
@@ -206,7 +207,7 @@ const PEDIATRIC_DENTISTRY_VIDEOS = [
   { title: "Pediatric Dentistry | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=WGrvg7ZuPEc" }
 ];
 
-const ORAL_SURGERY_VIDEOS = [
+export const ORAL_SURGERY_VIDEOS = [
   { title: "Oral Surgery | Impaction & Extraction Facts | INBDE, ADAT", url: "https://www.youtube.com/watch?v=xdhp4L_w2hc" },
   { title: "Oral Surgery | Instrumentation for Extraction | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Crfag75ztP4" },
   { title: "Oral Surgery | Simple Extraction | INBDE, ADAT", url: "https://www.youtube.com/watch?v=mdE7H8maXcY" },
@@ -220,7 +221,7 @@ const ORAL_SURGERY_VIDEOS = [
   { title: "Oral Surgery | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=Ca0GC0Ph43k" }
 ];
 
-const OPERATIVE_DENTISTRY_VIDEOS = [
+export const OPERATIVE_DENTISTRY_VIDEOS = [
   { title: "Operative Dentistry | Dental Caries | INBDE, ADAT", url: "https://www.youtube.com/watch?v=6U2ZTAWnVvo" },
   { title: "Operative Dentistry | Diagnosis & Treatment Planning | INBDE, ADAT", url: "https://www.youtube.com/watch?v=wMguKv63fWQ" },
   { title: "Operative Dentistry | Instrumentation | INBDE, ADAT", url: "https://www.youtube.com/watch?v=J1S-SgJEuCo" },
@@ -230,7 +231,7 @@ const OPERATIVE_DENTISTRY_VIDEOS = [
   { title: "Operative Dentistry | PRACTICE QUESTIONS | INBDE, ADAT", url: "https://www.youtube.com/watch?v=klcJZEHK_q8" }
 ];
 
-const ETHICS_VIDEOS = [
+export const ETHICS_VIDEOS = [
   { title: "Ethics | Introduction to ADA Code | INBDE", url: "https://www.youtube.com/watch?v=_17oaXMduE8" },
   { title: "Ethics | Autonomy | INBDE", url: "https://www.youtube.com/watch?v=ZxU8dAfH9KM" },
   { title: "Ethics | Nonmaleficence | INBDE", url: "https://www.youtube.com/watch?v=HYZnrFdz5zc" },
@@ -240,6 +241,26 @@ const ETHICS_VIDEOS = [
   { title: "Ethics | Abuse & Neglect | INBDE", url: "https://www.youtube.com/watch?v=PoTZZObJ20E" },
   { title: "Ethics | PRACTICE QUESTIONS | INBDE", url: "https://www.youtube.com/watch?v=AKpOqk_PCg8" }
 ];
+
+// Helper function to get videos for a playlist
+export const getVideosForPlaylist = (playlist: Playlist): VideoInfo[] => {
+  if (playlist.title.includes('Head and Neck')) return HEAD_AND_NECK_VIDEOS;
+  if (playlist.title.includes('Pharmacology')) return PHARMACOLOGY_VIDEOS;
+  if (playlist.title.includes('Oral Radiology')) return ORAL_RADIOLOGY_VIDEOS;
+  if (playlist.title.includes('Oral Pathology')) return ORAL_PATHOLOGY_VIDEOS;
+  if (playlist.title.includes('Patient Management')) return PATIENT_MANAGEMENT_VIDEOS;
+  if (playlist.title.includes('Oral Medicine')) return ORAL_MEDICINE_VIDEOS;
+  if (playlist.title.includes('Biostatistics')) return BIOSTATISTICS_VIDEOS;
+  if (playlist.title.includes('Orthodontics')) return ORTHODONTICS_VIDEOS;
+  if (playlist.title.includes('Periodontics')) return PERIODONTICS_VIDEOS;
+  if (playlist.title.includes('Endodontics')) return ENDODONTICS_VIDEOS;
+  if (playlist.title.includes('Prosthodontics')) return PROSTHODONTICS_VIDEOS;
+  if (playlist.title.includes('Pediatric Dentistry')) return PEDIATRIC_DENTISTRY_VIDEOS;
+  if (playlist.title.includes('Oral Surgery')) return ORAL_SURGERY_VIDEOS;
+  if (playlist.title.includes('Operative Dentistry')) return OPERATIVE_DENTISTRY_VIDEOS;
+  if (playlist.title.includes('Ethics')) return ETHICS_VIDEOS;
+  return [];
+};
 
 const fetchTranscript = async (url: string): Promise<string> => {
   try {
@@ -254,179 +275,89 @@ const fetchTranscript = async (url: string): Promise<string> => {
   }
 };
 
-const generatePrompt = (playlist: Playlist, videoTranscripts: Record<string, string>) => {
-  const isHeadAndNeck = playlist.title.includes('Head and Neck');
-  const isPharmacology = playlist.title.includes('Pharmacology');
-  const isOralRadiology = playlist.title.includes('Oral Radiology');
-  const isOralPathology = playlist.title.includes('Oral Pathology');
-  const isPatientManagement = playlist.title.includes('Patient Management');
-  const isOralMedicine = playlist.title.includes('Oral Medicine');
-  const isBiostatistics = playlist.title.includes('Biostatistics');
-  const isOrthodontics = playlist.title.includes('Orthodontics');
-  const isPeriodontics = playlist.title.includes('Periodontics');
-  const isEndodontics = playlist.title.includes('Endodontics');
-  const isProsthodontics = playlist.title.includes('Prosthodontics');
-  const isPediatricDentistry = playlist.title.includes('Pediatric Dentistry');
-  const isOralSurgery = playlist.title.includes('Oral Surgery');
-  const isOperativeDentistry = playlist.title.includes('Operative Dentistry');
-  const isEthics = playlist.title.includes('Ethics');
-
-  let videoContext = '';
-  let videosToProcess: { title: string, url: string }[] = [];
-
-  if (isHeadAndNeck) videosToProcess = HEAD_AND_NECK_VIDEOS;
-  else if (isPharmacology) videosToProcess = PHARMACOLOGY_VIDEOS;
-  else if (isOralRadiology) videosToProcess = ORAL_RADIOLOGY_VIDEOS;
-  else if (isOralPathology) videosToProcess = ORAL_PATHOLOGY_VIDEOS;
-  else if (isPatientManagement) videosToProcess = PATIENT_MANAGEMENT_VIDEOS;
-  else if (isOralMedicine) videosToProcess = ORAL_MEDICINE_VIDEOS;
-  else if (isBiostatistics) videosToProcess = BIOSTATISTICS_VIDEOS;
-  else if (isOrthodontics) videosToProcess = ORTHODONTICS_VIDEOS;
-  else if (isPeriodontics) videosToProcess = PERIODONTICS_VIDEOS;
-  else if (isEndodontics) videosToProcess = ENDODONTICS_VIDEOS;
-  else if (isProsthodontics) videosToProcess = PROSTHODONTICS_VIDEOS;
-  else if (isPediatricDentistry) videosToProcess = PEDIATRIC_DENTISTRY_VIDEOS;
-  else if (isOralSurgery) videosToProcess = ORAL_SURGERY_VIDEOS;
-  else if (isOperativeDentistry) videosToProcess = OPERATIVE_DENTISTRY_VIDEOS;
-  else if (isEthics) videosToProcess = ETHICS_VIDEOS;
-
-  if (videosToProcess.length > 0) {
-    videoContext = `
-    For this specific "${playlist.title}" playlist, you MUST use the following videos.
-    I have provided the TRANSCRIPT for some videos to help you generate accurate flashcards.
-    
-    ${videosToProcess.map((v, i) => {
-      const transcript = videoTranscripts[v.url] ? `\n    TRANSCRIPT: ${videoTranscripts[v.url].substring(0, 5000)}... (truncated)` : '';
-      return `${i + 1}. ${v.title}: ${v.url}${transcript}`;
-    }).join('\n    ')}
-    `;
-  } else {
-    // Fallback for other playlists
-    videoContext = `
-    1. Identify EVERY video in this playlist ("${playlist.title}").
-    2. For each video, retrieve the specific YouTube URL (e.g., https://www.youtube.com/watch?v=...).
-    `;
-  }
-
-  return `
-    You are an expert tutor specializing in the INBDE dental examination.
-    
-    TASK: Generate comprehensive study materials for the "${playlist.title}" playlist.
-    
-    ${videoContext}
-    
-    For EACH video listed above, create an independent study module with:
-    - "videoTitle": The exact title of the video
-    - "videoUrl": The specific YouTube link provided above
-    - "summary": A detailed 3-4 paragraph high-yield summary of key clinical concepts
-    - "flashcards": Exactly 5 detailed flashcards (Front/Back format) using the provided TRANSCRIPT if available.
-    - "multipleChoice": Exactly 3 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation
-    - "trueFalse": Exactly 3 True/False statements with detailed reasoning
-    
-    CRITICAL: The output MUST be a valid JSON object with:
-    - "playlistTitle": "${playlist.title}"
-    - "playlistUrl": "${playlist.url}"
-    - "modules": An array containing one object for EACH video above
-    
-    Ensure 100% accuracy to Dr. Ryan's Mental Dental curriculum.
-  `;
-};
-
 const studyDataSchema: Schema = {
   type: Type.OBJECT,
   properties: {
     playlistTitle: { type: Type.STRING },
-    playlistUrl: { type: Type.STRING },
-    modules: {
+    videoTitle: { type: Type.STRING },
+    videoUrl: { type: Type.STRING },
+    summary: { type: Type.STRING },
+    flashcards: {
       type: Type.ARRAY,
       items: {
         type: Type.OBJECT,
         properties: {
-          videoTitle: { type: Type.STRING },
-          videoUrl: { type: Type.STRING },
-          summary: { type: Type.STRING },
-          flashcards: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                front: { type: Type.STRING },
-                back: { type: Type.STRING }
-              },
-              required: ["front", "back"]
-            }
-          },
-          multipleChoice: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                question: { type: Type.STRING },
-                options: { type: Type.ARRAY, items: { type: Type.STRING } },
-                correctAnswer: { type: Type.STRING },
-                explanation: { type: Type.STRING }
-              },
-              required: ["question", "options", "correctAnswer", "explanation"]
-            }
-          },
-          trueFalse: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                statement: { type: Type.STRING },
-                isTrue: { type: Type.BOOLEAN },
-                explanation: { type: Type.STRING }
-              },
-              required: ["statement", "isTrue", "explanation"]
-            }
-          }
+          front: { type: Type.STRING },
+          back: { type: Type.STRING }
         },
-        required: ["videoTitle", "videoUrl", "summary", "flashcards", "multipleChoice", "trueFalse"]
+        required: ["front", "back"]
+      }
+    },
+    multipleChoice: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          question: { type: Type.STRING },
+          options: { type: Type.ARRAY, items: { type: Type.STRING } },
+          correctAnswer: { type: Type.STRING },
+          explanation: { type: Type.STRING }
+        },
+        required: ["question", "options", "correctAnswer", "explanation"]
+      }
+    },
+    trueFalse: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          statement: { type: Type.STRING },
+          isTrue: { type: Type.BOOLEAN },
+          explanation: { type: Type.STRING }
+        },
+        required: ["statement", "isTrue", "explanation"]
       }
     }
   },
-  required: ["playlistTitle", "playlistUrl", "modules"]
+  required: ["playlistTitle", "videoTitle", "videoUrl", "summary", "flashcards", "multipleChoice", "trueFalse"]
 };
 
-export const generatePlaylistData = async (apiKey: string, playlist: Playlist): Promise<StudyData> => {
+export const generateVideoStudyData = async (
+  apiKey: string,
+  playlist: Playlist,
+  video: VideoInfo
+): Promise<StudyData> => {
   const ai = new GoogleGenAI({ apiKey });
 
-  // 1. Identify which videos we are processing
-  let videosToFetch: { title: string, url: string }[] = [];
-  if (playlist.title.includes('Head and Neck')) videosToFetch = HEAD_AND_NECK_VIDEOS;
-  else if (playlist.title.includes('Pharmacology')) videosToFetch = PHARMACOLOGY_VIDEOS;
-  else if (playlist.title.includes('Oral Radiology')) videosToFetch = ORAL_RADIOLOGY_VIDEOS;
-  else if (playlist.title.includes('Oral Pathology')) videosToFetch = ORAL_PATHOLOGY_VIDEOS;
-  else if (playlist.title.includes('Patient Management')) videosToFetch = PATIENT_MANAGEMENT_VIDEOS;
-  else if (playlist.title.includes('Oral Medicine')) videosToFetch = ORAL_MEDICINE_VIDEOS;
-  else if (playlist.title.includes('Biostatistics')) videosToFetch = BIOSTATISTICS_VIDEOS;
-  else if (playlist.title.includes('Orthodontics')) videosToFetch = ORTHODONTICS_VIDEOS;
-  else if (playlist.title.includes('Periodontics')) videosToFetch = PERIODONTICS_VIDEOS;
-  else if (playlist.title.includes('Endodontics')) videosToFetch = ENDODONTICS_VIDEOS;
-  else if (playlist.title.includes('Prosthodontics')) videosToFetch = PROSTHODONTICS_VIDEOS;
-  else if (playlist.title.includes('Pediatric Dentistry')) videosToFetch = PEDIATRIC_DENTISTRY_VIDEOS;
-  else if (playlist.title.includes('Oral Surgery')) videosToFetch = ORAL_SURGERY_VIDEOS;
-  else if (playlist.title.includes('Operative Dentistry')) videosToFetch = OPERATIVE_DENTISTRY_VIDEOS;
-  else if (playlist.title.includes('Ethics')) videosToFetch = ETHICS_VIDEOS;
+  // Fetch transcript for this specific video
+  const transcript = await fetchTranscript(video.url);
 
-  // 2. Fetch transcripts (in parallel, but limited to avoid rate limits if necessary)
-  const videoTranscripts: Record<string, string> = {};
-
-  // We'll try to fetch transcripts for the first 5 videos to save time/bandwidth for now, 
-  // or all of them if the user wants deep analysis. Let's do all but handle errors gracefully.
-  const transcriptPromises = videosToFetch.map(async (v) => {
-    const text = await fetchTranscript(v.url);
-    if (text) videoTranscripts[v.url] = text;
-  });
-
-  await Promise.all(transcriptPromises);
+  const prompt = `
+    You are an expert tutor specializing in the INBDE dental examination.
+    
+    TASK: Generate comprehensive study materials for this specific video from the "${playlist.title}" playlist.
+    
+    VIDEO INFORMATION:
+    Title: ${video.title}
+    URL: ${video.url}
+    ${transcript ? `TRANSCRIPT: ${transcript.substring(0, 10000)}... (truncated if longer)` : '(No transcript available)'}
+    
+    Create a detailed study module with:
+    - "videoTitle": "${video.title}"
+    - "videoUrl": "${video.url}"
+    - "playlistTitle": "${playlist.title}"
+    - "summary": A detailed 3-4 paragraph high-yield summary of key clinical concepts from this video
+    - "flashcards": Exactly 10 detailed flashcards (Front/Back format) based on the video content${transcript ? ' and transcript' : ''}
+    - "multipleChoice": Exactly 5 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation
+    - "trueFalse": Exactly 5 True/False statements with detailed reasoning
+    
+    Ensure 100% accuracy to Dr. Ryan's Mental Dental curriculum.
+  `;
 
   try {
-    // Use gemini-1.5-flash-latest which is stable and has better quota
     const response = await ai.models.generateContent({
       model: 'gemini-flash-lite-latest',
-      contents: generatePrompt(playlist, videoTranscripts),
+      contents: prompt,
       config: {
         responseMimeType: 'application/json',
         responseSchema: studyDataSchema,
@@ -441,11 +372,8 @@ export const generatePlaylistData = async (apiKey: string, playlist: Playlist): 
 
     // Ensure required fields
     data.playlistTitle = playlist.title;
-    data.playlistUrl = playlist.url;
-
-    if (!data.modules || !Array.isArray(data.modules)) {
-      data.modules = [];
-    }
+    data.videoTitle = video.title;
+    data.videoUrl = video.url;
 
     return data;
   } catch (error) {

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { PLAYLISTS } from './constants';
-import { Playlist, AppState, StudyData } from './types';
+import { Playlist, AppState, StudyData, VideoInfo } from './types';
 import { PlaylistCard } from './components/PlaylistCard';
+import { VideoSelector } from './components/VideoSelector';
 import { JsonViewer } from './components/JsonViewer';
 import { StudyMode } from './components/StudyMode';
-import { generatePlaylistData } from './services/geminiService';
+import { generateVideoStudyData, getVideosForPlaylist } from './services/geminiService';
 
 const App: React.FC = () => {
   // Load API key from localStorage or environment
@@ -18,6 +19,7 @@ const App: React.FC = () => {
   const [tempApiKey, setTempApiKey] = useState('');
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<VideoInfo | null>(null);
   const [generatedData, setGeneratedData] = useState<StudyData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,18 +34,25 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSelectPlaylist = async (playlist: Playlist) => {
+  const handleSelectPlaylist = (playlist: Playlist) => {
     if (!apiKey) {
       setShowApiKeyInput(true);
       return;
     }
 
     setSelectedPlaylist(playlist);
+    setAppState(AppState.VIDEO_SELECTION);
+  };
+
+  const handleSelectVideo = async (video: VideoInfo) => {
+    if (!selectedPlaylist) return;
+
+    setSelectedVideo(video);
     setAppState(AppState.GENERATING);
     setError(null);
 
     try {
-      const data = await generatePlaylistData(apiKey, playlist);
+      const data = await generateVideoStudyData(apiKey, selectedPlaylist, video);
       setGeneratedData(data);
       setAppState(AppState.COMPLETE);
     } catch (err) {
@@ -52,10 +61,18 @@ const App: React.FC = () => {
     }
   };
 
-  const handleReset = () => {
+  const handleBack = () => {
     setAppState(AppState.IDLE);
     setGeneratedData(null);
     setSelectedPlaylist(null);
+    setSelectedVideo(null);
+    setError(null);
+  };
+
+  const handleBackToVideoSelection = () => {
+    setAppState(AppState.VIDEO_SELECTION);
+    setGeneratedData(null);
+    setSelectedVideo(null);
     setError(null);
   };
 
@@ -78,7 +95,7 @@ const App: React.FC = () => {
                 M
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                Mental Dental Extractor
+                Mental Dental Study Platform
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -152,27 +169,40 @@ const App: React.FC = () => {
             <div>
               <h3 className="text-sm font-medium text-red-800">Generation Failed</h3>
               <p className="text-sm text-red-600 mt-1">{error}</p>
-              <button onClick={handleReset} className="mt-2 text-sm font-semibold text-red-700 underline">Try Again</button>
+              <button onClick={handleBackToVideoSelection} className="mt-2 text-sm font-semibold text-red-700 underline">Try Again</button>
             </div>
           </div>
         )}
 
         {/* LOADING STATE */}
-        {appState === AppState.GENERATING && selectedPlaylist && (
+        {appState === AppState.GENERATING && selectedVideo && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="relative w-24 h-24 mb-8">
               <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Analyzing Playlist...</h2>
-            <p className="text-gray-500 mb-8 max-w-md text-center">
-              The AI is currently watching "{selectedPlaylist.title}" and extracting flashcards, MCQs, and True/False questions.
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Analyzing Video...</h2>
+            <p className="text-gray-500 mb-2 max-w-md text-center">
+              The AI is analyzing "{selectedVideo.title}"
             </p>
-            <div className="w-full max-w-md bg-gray-200 rounded-full h-2.5 overflow-hidden">
+            <p className="text-sm text-gray-400 text-center">
+              Generating flashcards, MCQs, and study materials
+            </p>
+            <div className="w-full max-w-md bg-gray-200 rounded-full h-2.5 overflow-hidden mt-8">
               <div className="bg-blue-600 h-2.5 rounded-full w-2/3 animate-pulse"></div>
             </div>
             <p className="text-xs text-gray-400 mt-4">This usually takes about 10-20 seconds.</p>
           </div>
+        )}
+
+        {/* VIDEO SELECTION STATE */}
+        {appState === AppState.VIDEO_SELECTION && selectedPlaylist && (
+          <VideoSelector
+            playlist={selectedPlaylist}
+            videos={getVideosForPlaylist(selectedPlaylist)}
+            onSelectVideo={handleSelectVideo}
+            onBack={handleBack}
+          />
         )}
 
         {/* STUDY MODE */}
@@ -183,15 +213,21 @@ const App: React.FC = () => {
         {/* COMPLETION STATE */}
         {appState === AppState.COMPLETE && generatedData && (
           <div className="space-y-8">
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-4">
               <button
                 onClick={handleStartStudy}
                 className="bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 transition-all transform hover:scale-105 flex items-center gap-3"
               >
                 <span>🎓</span> Start Studying Now
               </button>
+              <button
+                onClick={handleBackToVideoSelection}
+                className="bg-gray-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gray-700 transition-all transform hover:scale-105 flex items-center gap-3"
+              >
+                <span>←</span> Select Another Video
+              </button>
             </div>
-            <JsonViewer data={generatedData} onReset={handleReset} />
+            <JsonViewer data={generatedData} onReset={handleBack} />
           </div>
         )}
 
@@ -203,7 +239,7 @@ const App: React.FC = () => {
                 Prepare for the INBDE
               </h1>
               <p className="max-w-2xl mx-auto text-lg text-gray-500">
-                Select a Mental Dental playlist below to generate a comprehensive JSON study package for your Antigravity builder project.
+                Select a playlist to begin studying. You can choose individual videos to generate focused study materials.
               </p>
             </div>
 
