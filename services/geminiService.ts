@@ -12,42 +12,6 @@ const HEAD_AND_NECK_VIDEOS = [
   { title: "Triangles of the Neck & Neck Muscles", url: "https://www.youtube.com/watch?v=Ewj3Wf9D4zw" },
   { title: "Tongue Muscles", url: "https://www.youtube.com/watch?v=Zz3cO2MhwhQ" },
   { title: "Soft Palate Muscles", url: "https://www.youtube.com/watch?v=4dIGQ3L2YG4" },
-  { title: "Pharynx & Larynx Muscles", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8&list=PLVmK7sDA_arEKUbDuKoqUMSnIMNBXYiqV&index=11" },
-  { title: "Ear Muscles", url: "https://www.youtube.com/watch?v=VTDQt-KO0YQ" },
-  { title: "Eye Muscles", url: "https://www.youtube.com/watch?v=FhHqKGLeZkI" },
-  { title: "Cranial Nerves", url: "https://www.youtube.com/watch?v=1gB90u2JOYg" },
-  { title: "Salivary Glands", url: "https://www.youtube.com/watch?v=EF-YTC5yHi0" },
-  { title: "TMJ Anatomy", url: "https://www.youtube.com/watch?v=UjT_8kOnITE" },
-import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { Playlist, StudyData } from '../types';
-
-const HEAD_AND_NECK_VIDEOS = [
-  { title: "Embryology & Pharyngeal Arches", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8" },
-  { title: "Bones of the Skull", url: "https://www.youtube.com/watch?v=NQtXvfJCtxo" },
-  { title: "Foramina of the Skull", url: "https://www.youtube.com/watch?v=Yc0xxRAuwG0" },
-  { title: "Fossae of the Skull", url: "https://www.youtube.com/watch?v=z7TIYC6mfo4" },
-  { title: "Fascial Space Infections", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8&list=PLVmK7sDA_arEKUbDuKoqUMSnIMNBXYiqV&index=5" },
-  { title: "Muscles of Mastication", url: "https://www.youtube.com/watch?v=reqF1EORKSg" },
-  { title: "Muscles of Facial Expression", url: "https://www.youtube.com/watch?v=cqoOAz8i6nI" },
-  { title: "Triangles of the Neck & Neck Muscles", url: "https://www.youtube.com/watch?v=Ewj3Wf9D4zw" },
-  { title: "Tongue Muscles", url: "https://www.youtube.com/watch?v=Zz3cO2MhwhQ" },
-  { title: "Soft Palate Muscles", url: "https://www.youtube.com/watch?v=4dIGQ3L2YG4" },
-  { title: "Pharynx & Larynx Muscles", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8&list=PLVmK7sDA_arEKUbDuKoqUMSnIMNBXYiqV&index=11" },
-  { title: "Ear Muscles", url: "https://www.youtube.com/watch?v=VTDQt-KO0YQ" },
-  { title: "Eye Muscles", url: "https://www.youtube.com/watch?v=FhHqKGLeZkI" },
-  { title: "Cranial Nerves", url: "https://www.youtube.com/watch?v=1gB90u2JOYg" },
-  { title: "Salivary Glands", url: "https://www.youtube.com/watch?v=EF-YTC5yHi0" },
-  { title: "TMJ Anatomy", url: "https://www.youtube.com/watch?v=UjT_8kOnITE" },
-  { title: "Craniofacial Arteries", url: "https://www.youtube.com/watch?v=m97am1kHpoo" },
-  { title: "Craniofacial Veins", url: "https://www.youtube.com/watch?v=xcyUm5ZEzng" },
-  { title: "Craniofacial Lymphatics", url: "https://www.youtube.com/watch?v=4n2H2eQOmc8&list=PLVmK7sDA_arEKUbDuKoqUMSnIMNBXYiqV&index=19" },
-  { title: "PRACTICE QUESTIONS", url: "https://www.youtube.com/watch?v=PG6ZFCYt5S4" }
-];
-
-const PHARMACOLOGY_VIDEOS = [
-  { title: "Local Anesthetics | Categories and Calculations", url: "https://www.youtube.com/watch?v=5Ujl1VbAcgc" },
-  { title: "Local Anesthetics | Injections and Techniques", url: "https://www.youtube.com/watch?v=eWXuKFSnkIY" },
-  { title: "Pharmacology | Antibiotics", url: "https://www.youtube.com/watch?v=4Ym3f-N01yI" },
   { title: "Pharmacology | Analgesics", url: "https://www.youtube.com/watch?v=0_u-mE3_r_M" },
   { title: "Pharmacology | Pharmacokinetics", url: "https://www.youtube.com/watch?v=53s41reBCFQ" },
   { title: "Pharmacology | Pharmacodynamics", url: "https://www.youtube.com/watch?v=Cq5Zi_3mrfo" },
