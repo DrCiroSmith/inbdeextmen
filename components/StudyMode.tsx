@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StudyData } from '../types';
 
 interface StudyModeProps {
     data: StudyData;
     onExit: () => void;
+    onAddMore: () => void;
 }
 
 // Extend study modes to support new question types introduced in version 2.0.0
 type Mode = 'flashcards' | 'quiz' | 'fillInTheBlank' | 'matching' | 'clinical';
 
-export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
+export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onAddMore }) => {
     const [mode, setMode] = useState<Mode>('flashcards');
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
@@ -17,6 +18,61 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
     const [showResults, setShowResults] = useState(false);
     const [revealedFill, setRevealedFill] = useState<Record<number, boolean>>({});
     const [revealedClinical, setRevealedClinical] = useState<Record<number, boolean>>({});
+    const [matchingSelections, setMatchingSelections] = useState<Record<string, string>>({});
+    const [matchingChecked, setMatchingChecked] = useState<Record<number, boolean>>({});
+    const [matchingOptions, setMatchingOptions] = useState<Record<number, string[]>>({});
+    const [activeMatchingChoice, setActiveMatchingChoice] = useState<Record<number, string | null>>({});
+
+    useEffect(() => {
+        if (!data.matching) return;
+        const options: Record<number, string[]> = {};
+        data.matching.forEach((exercise, index) => {
+            const rights = exercise.pairs.map(pair => pair.right);
+            for (let i = rights.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rights[i], rights[j]] = [rights[j], rights[i]];
+            }
+            options[index] = rights;
+        });
+        setMatchingOptions(options);
+        setMatchingSelections({});
+        setMatchingChecked({});
+        setActiveMatchingChoice({});
+    }, [data.matching]);
+
+    const handleMatchAssign = (exerciseIndex: number, leftIndex: number, rightValue: string) => {
+        if (!rightValue) return;
+        setMatchingSelections(prev => ({
+            ...prev,
+            [`${exerciseIndex}-${leftIndex}`]: rightValue
+        }));
+        setActiveMatchingChoice(prev => ({
+            ...prev,
+            [exerciseIndex]: null
+        }));
+    };
+
+    const handleMatchClear = (exerciseIndex: number, leftIndex: number) => {
+        setMatchingSelections(prev => {
+            const next = { ...prev };
+            delete next[`${exerciseIndex}-${leftIndex}`];
+            return next;
+        });
+    };
+
+    const handleMatchReset = (exerciseIndex: number) => {
+        setMatchingSelections(prev => {
+            const next = { ...prev };
+            Object.keys(next).forEach(key => {
+                if (key.startsWith(`${exerciseIndex}-`)) {
+                    delete next[key];
+                }
+            });
+            return next;
+        });
+        setMatchingChecked(prev => ({ ...prev, [exerciseIndex]: false }));
+        setActiveMatchingChoice(prev => ({ ...prev, [exerciseIndex]: null }));
+    };
 
     // Flashcard Logic
     const handleNextCard = () => {
@@ -51,12 +107,20 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                     <h2 className="text-2xl font-bold text-gray-900">{data.videoTitle}</h2>
                     <p className="text-gray-500 text-sm">{data.playlistTitle}</p>
                 </div>
-                <button
-                    onClick={onExit}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium"
-                >
-                    Exit Study Mode
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={onAddMore}
+                        className="px-4 py-2 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                        Add More Study Items
+                    </button>
+                    <button
+                        onClick={onExit}
+                        className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                    >
+                        Exit Study Mode
+                    </button>
+                </div>
             </div>
 
             {/* Tabs */}
@@ -310,16 +374,115 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                                 <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
                                 <span className="text-gray-900 font-medium">{exercise.prompt}</span>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {exercise.pairs.map((pair, pIndex) => (
-                                    <div key={pIndex} className="p-3 bg-gray-50 rounded border border-gray-200 flex justify-between items-center">
-                                        <span className="font-medium text-gray-800">{pair.left}</span>
-                                        <span className="text-gray-500">→</span>
-                                        <span className="font-medium text-gray-800">{pair.right}</span>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Drag the matching options onto the left column, or click an option then click a target.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    {exercise.pairs.map((pair, leftIndex) => {
+                                        const selectionKey = `${index}-${leftIndex}`;
+                                        const selectedRight = matchingSelections[selectionKey];
+                                        const isChecked = matchingChecked[index];
+                                        const isCorrect = selectedRight === pair.right;
+                                        return (
+                                            <div key={selectionKey} className="p-3 bg-gray-50 rounded border border-gray-200">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className="font-medium text-gray-800">{pair.left}</span>
+                                                    {isChecked && (
+                                                        <span className={`text-sm font-semibold ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                                            {isCorrect ? '✓ Correct' : '✕ Try again'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onDragOver={(event) => event.preventDefault()}
+                                                    onDrop={(event) => {
+                                                        event.preventDefault();
+                                                        const rightValue = event.dataTransfer.getData('text/plain');
+                                                        handleMatchAssign(index, leftIndex, rightValue);
+                                                    }}
+                                                    onClick={() => {
+                                                        const activeChoice = activeMatchingChoice[index];
+                                                        if (activeChoice) {
+                                                            handleMatchAssign(index, leftIndex, activeChoice);
+                                                        }
+                                                    }}
+                                                    className={`mt-3 w-full flex items-center justify-between gap-3 rounded-lg border-2 px-3 py-2 transition-colors ${selectedRight
+                                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                        : 'border-dashed border-gray-300 text-gray-400 hover:border-blue-300 hover:text-blue-500'
+                                                        }`}
+                                                >
+                                                    <span>
+                                                        {selectedRight || 'Drop answer here'}
+                                                    </span>
+                                                    {selectedRight && (
+                                                        <span className="text-xs text-blue-600">Assigned</span>
+                                                    )}
+                                                </button>
+                                                {selectedRight && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleMatchClear(index, leftIndex)}
+                                                        className="mt-2 text-xs text-gray-500 hover:text-gray-700"
+                                                    >
+                                                        Clear selection
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="text-sm font-semibold text-gray-700">Matching Options</div>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {(matchingOptions[index] || [])
+                                            .filter(option => {
+                                                const assigned = Object.keys(matchingSelections)
+                                                    .filter(key => key.startsWith(`${index}-`))
+                                                    .map(key => matchingSelections[key]);
+                                                return !assigned.includes(option);
+                                            })
+                                            .map((option, optionIndex) => (
+                                                <button
+                                                    key={`${option}-${optionIndex}`}
+                                                    type="button"
+                                                    draggable
+                                                    onDragStart={(event) => {
+                                                        event.dataTransfer.setData('text/plain', option);
+                                                    }}
+                                                    onClick={() => setActiveMatchingChoice(prev => ({ ...prev, [index]: option }))}
+                                                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${activeMatchingChoice[index] === option
+                                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                        : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50'
+                                                        }`}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
                                     </div>
-                                ))}
+                                    <div className="flex flex-wrap gap-3 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setMatchingChecked(prev => ({ ...prev, [index]: true }))}
+                                            disabled={exercise.pairs.some((_, leftIndex) => !matchingSelections[`${index}-${leftIndex}`])}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Check Answers
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMatchReset(index)}
+                                            className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800"
+                                        >
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <p className="mt-4 text-sm text-gray-600"><span className="font-bold">Explanation:</span> {exercise.explanation}</p>
+                            {matchingChecked[index] && (
+                                <p className="mt-4 text-sm text-gray-600"><span className="font-bold">Explanation:</span> {exercise.explanation}</p>
+                            )}
                         </div>
                     ))}
                 </div>

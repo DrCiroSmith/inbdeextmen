@@ -100,6 +100,21 @@ const App: React.FC = () => {
     setAppState(AppState.COMPLETE);
   };
 
+  const handleAddMoreStudyItems = async () => {
+    if (!apiKey || !selectedPlaylist || !selectedVideo) return;
+    setAppState(AppState.GENERATING);
+    setError(null);
+
+    try {
+      const data = await generateVideoStudyData(apiKey, selectedPlaylist, selectedVideo, true);
+      setGeneratedData(data);
+      setAppState(AppState.STUDY);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setAppState(AppState.ERROR);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* Navbar */}
@@ -223,7 +238,7 @@ const App: React.FC = () => {
 
         {/* STUDY MODE */}
         {appState === AppState.STUDY && generatedData && (
-          <StudyMode data={generatedData} onExit={handleExitStudy} />
+          <StudyMode data={generatedData} onExit={handleExitStudy} onAddMore={handleAddMoreStudyItems} />
         )}
 
         {/* COMPLETION STATE */}
