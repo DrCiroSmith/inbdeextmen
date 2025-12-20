@@ -61,8 +61,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                 <button
                     onClick={() => setMode('flashcards')}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'flashcards'
-                            ? 'text-blue-600 border-b-2 border-blue-600'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'text-blue-600 border-b-2 border-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Flashcards ({data.flashcards.length})
@@ -70,8 +70,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                 <button
                     onClick={() => setMode('quiz')}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'quiz'
-                            ? 'text-blue-600 border-b-2 border-blue-600'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'text-blue-600 border-b-2 border-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Quiz ({data.multipleChoice.length})
@@ -83,12 +83,22 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                 <div className="flex flex-col items-center">
                     <div
                         onClick={() => setIsFlipped(!isFlipped)}
-                        className="w-full max-w-2xl h-96 perspective-1000 cursor-pointer group"
+                        className="w-full max-w-2xl h-96 cursor-pointer group"
+                        style={{ perspective: '1000px' }}
                     >
-                        <div className={`relative w-full h-full transition-all duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+                        <div
+                            className="relative w-full h-full transition-all duration-500"
+                            style={{
+                                transformStyle: 'preserve-3d',
+                                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                            }}
+                        >
                             {/* Front */}
-                            <div className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center backface-hidden border-2 border-transparent group-hover:border-blue-100 transition-colors">
-                                <span className="text-sm text-gray-400 uppercase tracking-wider mb-4">Front</span>
+                            <div
+                                className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-transparent group-hover:border-blue-100 transition-colors"
+                                style={{ backfaceVisibility: 'hidden' }}
+                            >
+                                <span className="text-sm text-gray-400 uppercase tracking-wider mb-4">Question</span>
                                 <p className="text-2xl text-center font-medium text-gray-800">
                                     {data.flashcards[currentCardIndex]?.front}
                                 </p>
@@ -96,8 +106,14 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             </div>
 
                             {/* Back */}
-                            <div className="absolute inset-0 w-full h-full bg-blue-50 rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center backface-hidden rotate-y-180 border-2 border-blue-100">
-                                <span className="text-sm text-blue-400 uppercase tracking-wider mb-4">Back</span>
+                            <div
+                                className="absolute inset-0 w-full h-full bg-blue-50 rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-blue-100"
+                                style={{
+                                    backfaceVisibility: 'hidden',
+                                    transform: 'rotateY(180deg)'
+                                }}
+                            >
+                                <span className="text-sm text-blue-400 uppercase tracking-wider mb-4">Answer</span>
                                 <p className="text-xl text-center text-gray-800 leading-relaxed">
                                     {data.flashcards[currentCardIndex]?.back}
                                 </p>
@@ -144,8 +160,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                                                         key={optIndex}
                                                         onClick={() => handleAnswerSelect(index, option)}
                                                         className={`w-full text-left p-4 rounded-lg border-2 transition-all ${quizAnswers[index] === option
-                                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                                : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                                                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                            : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
                                                             }`}
                                                     >
                                                         {option}
@@ -187,8 +203,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
 
                             {data.multipleChoice.map((quiz, index) => (
                                 <div key={index} className={`rounded-xl border p-6 ${quizAnswers[index] === quiz.correctAnswer
-                                        ? 'bg-green-50 border-green-200'
-                                        : 'bg-red-50 border-red-200'
+                                    ? 'bg-green-50 border-green-200'
+                                    : 'bg-red-50 border-red-200'
                                     }`}>
                                     <div className="flex gap-3 mb-4">
                                         <span className="font-bold text-gray-700">{index + 1}.</span>
