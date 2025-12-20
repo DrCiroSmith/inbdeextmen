@@ -223,7 +223,11 @@ const App: React.FC = () => {
 
         {/* STUDY MODE */}
         {appState === AppState.STUDY && generatedData && (
-          <StudyMode data={generatedData} onExit={handleExitStudy} />
+          <StudyMode
+            data={generatedData}
+            onExit={handleExitStudy}
+            onUpdateData={(nextData) => setGeneratedData(nextData)}
+          />
         )}
 
         {/* COMPLETION STATE */}

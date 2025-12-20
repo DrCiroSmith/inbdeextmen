@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StudyData } from '../types';
 
 interface StudyModeProps {
     data: StudyData;
     onExit: () => void;
+    onUpdateData: (data: StudyData) => void;
 }
 
 // Extend study modes to support new question types introduced in version 2.0.0
 type Mode = 'flashcards' | 'quiz' | 'fillInTheBlank' | 'matching' | 'clinical';
 
-export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
+export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData }) => {
     const [mode, setMode] = useState<Mode>('flashcards');
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
@@ -17,14 +18,28 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
     const [showResults, setShowResults] = useState(false);
     const [revealedFill, setRevealedFill] = useState<Record<number, boolean>>({});
     const [revealedClinical, setRevealedClinical] = useState<Record<number, boolean>>({});
+    const [newFlashcard, setNewFlashcard] = useState({ front: '', back: '' });
+    const [newQuiz, setNewQuiz] = useState({ question: '', options: '', correctAnswer: '', explanation: '' });
+    const [newFill, setNewFill] = useState({ question: '', answer: '', explanation: '' });
+    const [newMatching, setNewMatching] = useState({ prompt: '', left: '', right: '', explanation: '' });
+    const [newClinical, setNewClinical] = useState({ scenario: '', answer: '', explanation: '' });
+    const [matchingStates, setMatchingStates] = useState(() => (
+        data.matching?.map((exercise) => ({
+            rightOptions: shuffleArray(exercise.pairs.map((pair) => pair.right)),
+            matches: {} as Record<number, number>,
+            showResults: false
+        })) ?? []
+    ));
 
     // Flashcard Logic
     const handleNextCard = () => {
+        if (data.flashcards.length === 0) return;
         setIsFlipped(false);
         setCurrentCardIndex((prev) => (prev + 1) % data.flashcards.length);
     };
 
     const handlePrevCard = () => {
+        if (data.flashcards.length === 0) return;
         setIsFlipped(false);
         setCurrentCardIndex((prev) => (prev - 1 + data.flashcards.length) % data.flashcards.length);
     };
@@ -42,6 +57,128 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
         });
         return correct;
     };
+
+    const handleAddFlashcard = () => {
+        if (!newFlashcard.front.trim() || !newFlashcard.back.trim()) return;
+        onUpdateData({
+            ...data,
+            flashcards: [...data.flashcards, { front: newFlashcard.front.trim(), back: newFlashcard.back.trim() }]
+        });
+        setCurrentCardIndex(data.flashcards.length);
+        setIsFlipped(false);
+        setNewFlashcard({ front: '', back: '' });
+    };
+
+    const handleAddQuiz = () => {
+        const options = newQuiz.options
+            .split(',')
+            .map((option) => option.trim())
+            .filter(Boolean);
+        if (!newQuiz.question.trim() || options.length < 2 || !newQuiz.correctAnswer.trim() || !newQuiz.explanation.trim()) return;
+        onUpdateData({
+            ...data,
+            multipleChoice: [
+                ...data.multipleChoice,
+                {
+                    question: newQuiz.question.trim(),
+                    options,
+                    correctAnswer: newQuiz.correctAnswer.trim(),
+                    explanation: newQuiz.explanation.trim()
+                }
+            ]
+        });
+        setNewQuiz({ question: '', options: '', correctAnswer: '', explanation: '' });
+    };
+
+    const handleAddFill = () => {
+        if (!newFill.question.trim() || !newFill.answer.trim() || !newFill.explanation.trim()) return;
+        onUpdateData({
+            ...data,
+            fillInTheBlank: [
+                ...(data.fillInTheBlank ?? []),
+                {
+                    question: newFill.question.trim(),
+                    answer: newFill.answer.trim(),
+                    explanation: newFill.explanation.trim()
+                }
+            ]
+        });
+        setNewFill({ question: '', answer: '', explanation: '' });
+    };
+
+    const handleAddMatching = () => {
+        if (!newMatching.prompt.trim() || !newMatching.left.trim() || !newMatching.right.trim() || !newMatching.explanation.trim()) return;
+        const updatedMatching = [
+            ...(data.matching ?? []),
+            {
+                prompt: newMatching.prompt.trim(),
+                pairs: [{ left: newMatching.left.trim(), right: newMatching.right.trim() }],
+                explanation: newMatching.explanation.trim()
+            }
+        ];
+        onUpdateData({
+            ...data,
+            matching: updatedMatching
+        });
+        setMatchingStates((prev) => [
+            ...prev,
+            {
+                rightOptions: shuffleArray([newMatching.right.trim()]),
+                matches: {},
+                showResults: false
+            }
+        ]);
+        setNewMatching({ prompt: '', left: '', right: '', explanation: '' });
+    };
+
+    const handleAddClinical = () => {
+        if (!newClinical.scenario.trim() || !newClinical.answer.trim() || !newClinical.explanation.trim()) return;
+        onUpdateData({
+            ...data,
+            clinical: [
+                ...(data.clinical ?? []),
+                {
+                    scenario: newClinical.scenario.trim(),
+                    answer: newClinical.answer.trim(),
+                    explanation: newClinical.explanation.trim()
+                }
+            ]
+        });
+        setNewClinical({ scenario: '', answer: '', explanation: '' });
+    };
+
+    const handleDropMatch = (exerciseIndex: number, rightIndex: number, leftIndex: number) => {
+        setMatchingStates((prev) => prev.map((state, idx) => {
+            if (idx !== exerciseIndex) return state;
+            const matches = { ...state.matches };
+            Object.keys(matches).forEach((key) => {
+                if (matches[Number(key)] === leftIndex) {
+                    delete matches[Number(key)];
+                }
+            });
+            matches[rightIndex] = leftIndex;
+            return { ...state, matches };
+        }));
+    };
+
+    const resetMatching = (exerciseIndex: number) => {
+        setMatchingStates((prev) => prev.map((state, idx) => (
+            idx === exerciseIndex ? { ...state, matches: {}, showResults: false } : state
+        )));
+    };
+
+    useEffect(() => {
+        setMatchingStates(
+            data.matching?.map((exercise) => ({
+                rightOptions: shuffleArray(exercise.pairs.map((pair) => pair.right)),
+                matches: {},
+                showResults: false
+            })) ?? []
+        );
+    }, [data.matching]);
+
+    const hasFlashcards = data.flashcards.length > 0;
+    const hasMatching = (data.matching?.length ?? 0) > 0;
 
     return (
         <div className="max-w-4xl mx-auto p-6">
@@ -121,62 +258,96 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
             {/* Flashcard View */}
             {mode === 'flashcards' && (
                 <div className="flex flex-col items-center">
-                    <div
-                        onClick={() => setIsFlipped(!isFlipped)}
-                        className="w-full max-w-2xl h-96 cursor-pointer group"
-                        style={{ perspective: '1000px' }}
-                    >
-                        <div
-                            className="relative w-full h-full transition-all duration-500"
-                            style={{
-                                transformStyle: 'preserve-3d',
-                                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                            }}
-                        >
-                            {/* Front */}
+                    {hasFlashcards ? (
+                        <>
                             <div
-                                className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-transparent group-hover:border-blue-100 transition-colors"
-                                style={{ backfaceVisibility: 'hidden' }}
+                                onClick={() => setIsFlipped(!isFlipped)}
+                                className="w-full max-w-2xl h-96 cursor-pointer group"
+                                style={{ perspective: '1000px' }}
                             >
-                                <span className="text-sm text-gray-400 uppercase tracking-wider mb-4">Question</span>
-                                <p className="text-2xl text-center font-medium text-gray-800">
-                                    {data.flashcards[currentCardIndex]?.front}
-                                </p>
-                                <p className="absolute bottom-6 text-sm text-gray-400">Click to flip</p>
+                                <div
+                                    className="relative w-full h-full transition-all duration-500"
+                                    style={{
+                                        transformStyle: 'preserve-3d',
+                                        transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                                    }}
+                                >
+                                    {/* Front */}
+                                    <div
+                                        className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-transparent group-hover:border-blue-100 transition-colors"
+                                        style={{ backfaceVisibility: 'hidden' }}
+                                    >
+                                        <span className="text-sm text-gray-400 uppercase tracking-wider mb-4">Question</span>
+                                        <p className="text-2xl text-center font-medium text-gray-800">
+                                            {data.flashcards[currentCardIndex]?.front}
+                                        </p>
+                                        <p className="absolute bottom-6 text-sm text-gray-400">Click to flip</p>
+                                    </div>
+
+                                    {/* Back */}
+                                    <div
+                                        className="absolute inset-0 w-full h-full bg-blue-50 rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-blue-100"
+                                        style={{
+                                            backfaceVisibility: 'hidden',
+                                            transform: 'rotateY(180deg)'
+                                        }}
+                                    >
+                                        <span className="text-sm text-blue-400 uppercase tracking-wider mb-4">Answer</span>
+                                        <p className="text-xl text-center text-gray-800 leading-relaxed">
+                                            {data.flashcards[currentCardIndex]?.back}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Back */}
-                            <div
-                                className="absolute inset-0 w-full h-full bg-blue-50 rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-blue-100"
-                                style={{
-                                    backfaceVisibility: 'hidden',
-                                    transform: 'rotateY(180deg)'
-                                }}
-                            >
-                                <span className="text-sm text-blue-400 uppercase tracking-wider mb-4">Answer</span>
-                                <p className="text-xl text-center text-gray-800 leading-relaxed">
-                                    {data.flashcards[currentCardIndex]?.back}
-                                </p>
+                            <div className="flex items-center gap-6 mt-8">
+                                <button
+                                    onClick={handlePrevCard}
+                                    className="p-3 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                                >
+                                    ← Previous
+                                </button>
+                                <span className="text-gray-500 font-medium">
+                                    {currentCardIndex + 1} / {data.flashcards.length}
+                                </span>
+                                <button
+                                    onClick={handleNextCard}
+                                    className="p-3 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                                >
+                                    Next →
+                                </button>
                             </div>
+                        </>
+                    ) : (
+                        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-sm border border-dashed border-gray-300 p-10 text-center text-gray-500">
+                            No flashcards yet. Add your first card below to start studying.
                         </div>
-                    </div>
+                    )}
 
-                    <div className="flex items-center gap-6 mt-8">
-                        <button
-                            onClick={handlePrevCard}
-                            className="p-3 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                        >
-                            ← Previous
-                        </button>
-                        <span className="text-gray-500 font-medium">
-                            {currentCardIndex + 1} / {data.flashcards.length}
-                        </span>
-                        <button
-                            onClick={handleNextCard}
-                            className="p-3 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-                        >
-                            Next →
-                        </button>
+                    <div className="w-full max-w-2xl mt-10 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a flashcard</h3>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                value={newFlashcard.front}
+                                onChange={(event) => setNewFlashcard((prev) => ({ ...prev, front: event.target.value }))}
+                                placeholder="Front (question)"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <textarea
+                                value={newFlashcard.back}
+                                onChange={(event) => setNewFlashcard((prev) => ({ ...prev, back: event.target.value }))}
+                                placeholder="Back (answer)"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                            />
+                            <button
+                                onClick={handleAddFlashcard}
+                                disabled={!newFlashcard.front.trim() || !newFlashcard.back.trim()}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add Flashcard
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -272,6 +443,51 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             ))}
                         </div>
                     )}
+
+                    <div className="mt-10 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a quiz question</h3>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                value={newQuiz.question}
+                                onChange={(event) => setNewQuiz((prev) => ({ ...prev, question: event.target.value }))}
+                                placeholder="Question"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <input
+                                type="text"
+                                value={newQuiz.options}
+                                onChange={(event) => setNewQuiz((prev) => ({ ...prev, options: event.target.value }))}
+                                placeholder="Options (comma separated)"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <input
+                                type="text"
+                                value={newQuiz.correctAnswer}
+                                onChange={(event) => setNewQuiz((prev) => ({ ...prev, correctAnswer: event.target.value }))}
+                                placeholder="Correct answer"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <textarea
+                                value={newQuiz.explanation}
+                                onChange={(event) => setNewQuiz((prev) => ({ ...prev, explanation: event.target.value }))}
+                                placeholder="Explanation"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                            />
+                            <button
+                                onClick={handleAddQuiz}
+                                disabled={
+                                    !newQuiz.question.trim() ||
+                                    !newQuiz.correctAnswer.trim() ||
+                                    !newQuiz.explanation.trim() ||
+                                    newQuiz.options.split(',').map((option) => option.trim()).filter(Boolean).length < 2
+                                }
+                                className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add Quiz Question
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -298,30 +514,179 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             )}
                         </div>
                     ))}
+
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a fill-in-the-blank</h3>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                value={newFill.question}
+                                onChange={(event) => setNewFill((prev) => ({ ...prev, question: event.target.value }))}
+                                placeholder="Prompt or question"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <input
+                                type="text"
+                                value={newFill.answer}
+                                onChange={(event) => setNewFill((prev) => ({ ...prev, answer: event.target.value }))}
+                                placeholder="Answer"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <textarea
+                                value={newFill.explanation}
+                                onChange={(event) => setNewFill((prev) => ({ ...prev, explanation: event.target.value }))}
+                                placeholder="Explanation"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                            />
+                            <button
+                                onClick={handleAddFill}
+                                disabled={!newFill.question.trim() || !newFill.answer.trim() || !newFill.explanation.trim()}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add Fill-in-the-Blank
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
             {/* Matching View */}
             {mode === 'matching' && (
                 <div className="max-w-3xl mx-auto space-y-8">
-                    {data.matching?.map((exercise, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <div className="mb-4">
-                                <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
-                                <span className="text-gray-900 font-medium">{exercise.prompt}</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {exercise.pairs.map((pair, pIndex) => (
-                                    <div key={pIndex} className="p-3 bg-gray-50 rounded border border-gray-200 flex justify-between items-center">
-                                        <span className="font-medium text-gray-800">{pair.left}</span>
-                                        <span className="text-gray-500">→</span>
-                                        <span className="font-medium text-gray-800">{pair.right}</span>
+                    {hasMatching ? (
+                        data.matching?.map((exercise, index) => {
+                            const matchingState = matchingStates[index];
+                            const rightOptions = matchingState?.rightOptions ?? [];
+                            const matches = matchingState?.matches ?? {};
+                            return (
+                                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                    <div className="mb-4">
+                                        <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
+                                        <span className="text-gray-900 font-medium">{exercise.prompt}</span>
                                     </div>
-                                ))}
-                            </div>
-                            <p className="mt-4 text-sm text-gray-600"><span className="font-bold">Explanation:</span> {exercise.explanation}</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <p className="text-xs uppercase tracking-wide text-gray-400">Drag these terms</p>
+                                            {exercise.pairs.map((pair, leftIndex) => (
+                                                <div
+                                                    key={pair.left}
+                                                    draggable
+                                                    onDragStart={(event) => {
+                                                        event.dataTransfer.setData('text/plain', String(leftIndex));
+                                                        event.dataTransfer.effectAllowed = 'move';
+                                                    }}
+                                                    className="p-3 bg-blue-50 rounded-lg border border-blue-100 text-blue-900 font-medium shadow-sm cursor-grab active:cursor-grabbing"
+                                                >
+                                                    {pair.left}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="space-y-3">
+                                            <p className="text-xs uppercase tracking-wide text-gray-400">Drop onto the matches</p>
+                                            {rightOptions.map((rightOption, rightIndex) => {
+                                                const matchedLeftIndex = matches[rightIndex];
+                                                const matchedLeft = matchedLeftIndex !== undefined
+                                                    ? exercise.pairs[matchedLeftIndex]?.left
+                                                    : null;
+                                                const isCorrect = matchedLeftIndex !== undefined && exercise.pairs[matchedLeftIndex]?.right === rightOption;
+                                                const showResults = matchingState?.showResults;
+                                                return (
+                                                    <div
+                                                        key={`${rightOption}-${rightIndex}`}
+                                                        onDragOver={(event) => event.preventDefault()}
+                                                        onDrop={(event) => {
+                                                            event.preventDefault();
+                                                            const leftIndex = Number(event.dataTransfer.getData('text/plain'));
+                                                            if (Number.isNaN(leftIndex)) return;
+                                                            handleDropMatch(index, rightIndex, leftIndex);
+                                                        }}
+                                                        className={`p-3 rounded-lg border-2 border-dashed flex items-center justify-between gap-3 min-h-[56px] ${matchedLeft
+                                                            ? 'border-blue-300 bg-blue-50'
+                                                            : 'border-gray-200 bg-gray-50'
+                                                            }`}
+                                                    >
+                                                        <span className="text-gray-800 font-medium">{rightOption}</span>
+                                                        <span className="text-sm text-gray-500">←</span>
+                                                        <span className={`text-sm font-semibold ${matchedLeft ? 'text-blue-700' : 'text-gray-400'}`}>
+                                                            {matchedLeft || 'Drop here'}
+                                                        </span>
+                                                        {showResults && matchedLeft && (
+                                                            <span className={`text-xs font-bold ${isCorrect ? 'text-green-600' : 'text-red-500'}`}>
+                                                                {isCorrect ? 'Correct' : 'Try again'}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                                        <button
+                                            onClick={() => setMatchingStates((prev) => prev.map((state, idx) => (
+                                                idx === index ? { ...state, showResults: !state.showResults } : state
+                                            )))}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                                        >
+                                            {matchingState?.showResults ? 'Hide Results' : 'Check Answers'}
+                                        </button>
+                                        <button
+                                            onClick={() => resetMatching(index)}
+                                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                                        >
+                                            Reset Matches
+                                        </button>
+                                    </div>
+                                    <p className="mt-4 text-sm text-gray-600"><span className="font-bold">Explanation:</span> {exercise.explanation}</p>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="bg-white rounded-2xl shadow-sm border border-dashed border-gray-300 p-10 text-center text-gray-500">
+                            No matching exercises yet. Add one below to start practicing.
                         </div>
-                    ))}
+                    )}
+
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a matching exercise</h3>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                value={newMatching.prompt}
+                                onChange={(event) => setNewMatching((prev) => ({ ...prev, prompt: event.target.value }))}
+                                placeholder="Prompt (e.g., Match the terms)"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input
+                                    type="text"
+                                    value={newMatching.left}
+                                    onChange={(event) => setNewMatching((prev) => ({ ...prev, left: event.target.value }))}
+                                    placeholder="Left item"
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                                <input
+                                    type="text"
+                                    value={newMatching.right}
+                                    onChange={(event) => setNewMatching((prev) => ({ ...prev, right: event.target.value }))}
+                                    placeholder="Right item"
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <textarea
+                                value={newMatching.explanation}
+                                onChange={(event) => setNewMatching((prev) => ({ ...prev, explanation: event.target.value }))}
+                                placeholder="Explanation"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                            />
+                            <button
+                                onClick={handleAddMatching}
+                                disabled={!newMatching.prompt.trim() || !newMatching.left.trim() || !newMatching.right.trim() || !newMatching.explanation.trim()}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add Matching Exercise
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -348,8 +713,50 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             )}
                         </div>
                     ))}
+
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a clinical scenario</h3>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                value={newClinical.scenario}
+                                onChange={(event) => setNewClinical((prev) => ({ ...prev, scenario: event.target.value }))}
+                                placeholder="Scenario"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <input
+                                type="text"
+                                value={newClinical.answer}
+                                onChange={(event) => setNewClinical((prev) => ({ ...prev, answer: event.target.value }))}
+                                placeholder="Answer"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <textarea
+                                value={newClinical.explanation}
+                                onChange={(event) => setNewClinical((prev) => ({ ...prev, explanation: event.target.value }))}
+                                placeholder="Explanation"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                            />
+                            <button
+                                onClick={handleAddClinical}
+                                disabled={!newClinical.scenario.trim() || !newClinical.answer.trim() || !newClinical.explanation.trim()}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add Clinical Scenario
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
     );
+};
+
+const shuffleArray = <T,>(values: T[]) => {
+    const copy = [...values];
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
 };
