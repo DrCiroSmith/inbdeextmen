@@ -1,4 +1,4 @@
-import { StudyData, Flashcard, MultipleChoice, TrueFalse } from '../types';
+import { StudyData, Flashcard, MultipleChoice, TrueFalse, FillInTheBlank, Matching, ClinicalScenario } from '../types';
 
 const CACHE_PREFIX = 'mental_dental_cache_';
 const CACHE_VERSION = 'v1';
@@ -70,6 +70,27 @@ const deduplicateTrueFalse = (existing: TrueFalse[], newTF: TrueFalse[]): TrueFa
     return [...existing, ...unique];
 };
 
+// Deduplicate fill-in-the-blank questions
+const deduplicateFillInTheBlank = (existing: FillInTheBlank[], newFill: FillInTheBlank[]): FillInTheBlank[] => {
+    const existingQuestions = new Set(existing.map(q => q.question.trim().toLowerCase()));
+    const unique = newFill.filter(q => !existingQuestions.has(q.question.trim().toLowerCase()));
+    return [...existing, ...unique];
+};
+
+// Deduplicate matching exercises
+const deduplicateMatching = (existing: Matching[], newMatch: Matching[]): Matching[] => {
+    const existingPrompts = new Set(existing.map(m => m.prompt.trim().toLowerCase()));
+    const unique = newMatch.filter(m => !existingPrompts.has(m.prompt.trim().toLowerCase()));
+    return [...existing, ...unique];
+};
+
+// Deduplicate clinical scenario questions
+const deduplicateClinical = (existing: ClinicalScenario[], newClinical: ClinicalScenario[]): ClinicalScenario[] => {
+    const existingScenarios = new Set(existing.map(c => c.scenario.trim().toLowerCase()));
+    const unique = newClinical.filter(c => !existingScenarios.has(c.scenario.trim().toLowerCase()));
+    return [...existing, ...unique];
+};
+
 // Merge new study data with existing cached data (deduplicating)
 export const mergeStudyData = (existing: StudyData, newData: StudyData): StudyData => {
     return {
@@ -78,6 +99,9 @@ export const mergeStudyData = (existing: StudyData, newData: StudyData): StudyDa
         flashcards: deduplicateFlashcards(existing.flashcards, newData.flashcards),
         multipleChoice: deduplicateMCQs(existing.multipleChoice, newData.multipleChoice),
         trueFalse: deduplicateTrueFalse(existing.trueFalse, newData.trueFalse),
+        fillInTheBlank: deduplicateFillInTheBlank(existing.fillInTheBlank || [], newData.fillInTheBlank || []),
+        matching: deduplicateMatching(existing.matching || [], newData.matching || []),
+        clinical: deduplicateClinical(existing.clinical || [], newData.clinical || []),
         lastUpdated: new Date().toISOString(),
         generationCount: (existing.generationCount || 1) + 1
     };

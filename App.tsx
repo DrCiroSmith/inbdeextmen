@@ -80,6 +80,22 @@ const App: React.FC = () => {
     setAppState(AppState.STUDY);
   };
 
+  // Trigger a fresh generation for the currently selected video, bypassing any cached data
+  const handleReanalyze = async () => {
+    if (!apiKey || !selectedPlaylist || !selectedVideo) return;
+    setAppState(AppState.GENERATING);
+    setError(null);
+
+    try {
+      const data = await generateVideoStudyData(apiKey, selectedPlaylist, selectedVideo, true);
+      setGeneratedData(data);
+      setAppState(AppState.COMPLETE);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setAppState(AppState.ERROR);
+    }
+  };
+
   const handleExitStudy = () => {
     setAppState(AppState.COMPLETE);
   };
@@ -225,6 +241,12 @@ const App: React.FC = () => {
                 className="bg-gray-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gray-700 transition-all transform hover:scale-105 flex items-center gap-3"
               >
                 <span>←</span> Select Another Video
+              </button>
+              <button
+                onClick={handleReanalyze}
+                className="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center gap-3"
+              >
+                <span>🔄</span> Re-analyze
               </button>
             </div>
             <JsonViewer data={generatedData} onReset={handleBack} />

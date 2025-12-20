@@ -28,6 +28,33 @@ export interface TrueFalse {
   explanation: string;
 }
 
+// New question types introduced in version 2.0.0
+export interface FillInTheBlank {
+  question: string;
+  answer: string;
+  explanation: string;
+  difficulty?: string;
+}
+
+export interface MatchingPair {
+  left: string;
+  right: string;
+}
+
+export interface Matching {
+  prompt: string;
+  pairs: MatchingPair[];
+  explanation: string;
+  difficulty?: string;
+}
+
+export interface ClinicalScenario {
+  scenario: string;
+  answer: string;
+  explanation: string;
+  difficulty?: string;
+}
+
 export interface StudyData {
   playlistTitle: string;
   videoTitle: string;
@@ -36,6 +63,9 @@ export interface StudyData {
   flashcards: Flashcard[];
   multipleChoice: MultipleChoice[];
   trueFalse: TrueFalse[];
+  fillInTheBlank: FillInTheBlank[];
+  matching: Matching[];
+  clinical: ClinicalScenario[];
   // Cache metadata
   isCached?: boolean;
   generatedAt?: string;
