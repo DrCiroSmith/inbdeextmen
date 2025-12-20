@@ -6,7 +6,8 @@ interface StudyModeProps {
     onExit: () => void;
 }
 
-type Mode = 'flashcards' | 'quiz';
+// Extend study modes to support new question types introduced in version 2.0.0
+type Mode = 'flashcards' | 'quiz' | 'fillInTheBlank' | 'matching' | 'clinical';
 
 export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
     const [mode, setMode] = useState<Mode>('flashcards');
@@ -14,6 +15,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
     const [showResults, setShowResults] = useState(false);
+    const [revealedFill, setRevealedFill] = useState<Record<number, boolean>>({});
+    const [revealedClinical, setRevealedClinical] = useState<Record<number, boolean>>({});
 
     // Flashcard Logic
     const handleNextCard = () => {
@@ -57,9 +60,11 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 mb-8 border-b border-gray-200">
+            <div className="flex flex-wrap gap-4 mb-8 border-b border-gray-200" role="tablist">
                 <button
                     onClick={() => setMode('flashcards')}
+                    role="tab"
+                    aria-selected={mode === 'flashcards'}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'flashcards'
                         ? 'text-blue-600 border-b-2 border-blue-600'
                         : 'text-gray-500 hover:text-gray-700'
@@ -69,12 +74,47 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                 </button>
                 <button
                     onClick={() => setMode('quiz')}
+                    role="tab"
+                    aria-selected={mode === 'quiz'}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'quiz'
                         ? 'text-blue-600 border-b-2 border-blue-600'
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Quiz ({data.multipleChoice.length})
+                </button>
+                <button
+                    onClick={() => setMode('fillInTheBlank')}
+                    role="tab"
+                    aria-selected={mode === 'fillInTheBlank'}
+                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'fillInTheBlank'
+                        ? 'text-blue-600 border-b-2 border-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    Fill-in-the-Blank ({data.fillInTheBlank?.length || 0})
+                </button>
+                <button
+                    onClick={() => setMode('matching')}
+                    role="tab"
+                    aria-selected={mode === 'matching'}
+                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'matching'
+                        ? 'text-blue-600 border-b-2 border-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    Matching ({data.matching?.length || 0})
+                </button>
+                <button
+                    onClick={() => setMode('clinical')}
+                    role="tab"
+                    aria-selected={mode === 'clinical'}
+                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'clinical'
+                        ? 'text-blue-600 border-b-2 border-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    Clinical ({data.clinical?.length || 0})
                 </button>
             </div>
 
@@ -232,6 +272,82 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit }) => {
                             ))}
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Fill-in-the-Blank View */}
+            {mode === 'fillInTheBlank' && (
+                <div className="max-w-3xl mx-auto space-y-8">
+                    {data.fillInTheBlank?.map((item, index) => (
+                        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <div className="mb-4">
+                                <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
+                                <span className="text-gray-900 font-medium">{item.question}</span>
+                            </div>
+                            <button
+                                onClick={() => setRevealedFill(prev => ({ ...prev, [index]: !prev[index] }))}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                {revealedFill[index] ? 'Hide Answer' : 'Reveal Answer'}
+                            </button>
+                            {revealedFill[index] && (
+                                <div className="mt-4 space-y-2 text-gray-700">
+                                    <p><span className="font-bold">Answer:</span> {item.answer}</p>
+                                    <p><span className="font-bold">Explanation:</span> {item.explanation}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Matching View */}
+            {mode === 'matching' && (
+                <div className="max-w-3xl mx-auto space-y-8">
+                    {data.matching?.map((exercise, index) => (
+                        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <div className="mb-4">
+                                <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
+                                <span className="text-gray-900 font-medium">{exercise.prompt}</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {exercise.pairs.map((pair, pIndex) => (
+                                    <div key={pIndex} className="p-3 bg-gray-50 rounded border border-gray-200 flex justify-between items-center">
+                                        <span className="font-medium text-gray-800">{pair.left}</span>
+                                        <span className="text-gray-500">→</span>
+                                        <span className="font-medium text-gray-800">{pair.right}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="mt-4 text-sm text-gray-600"><span className="font-bold">Explanation:</span> {exercise.explanation}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Clinical Scenario View */}
+            {mode === 'clinical' && (
+                <div className="max-w-3xl mx-auto space-y-8">
+                    {data.clinical?.map((item, index) => (
+                        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <div className="mb-4">
+                                <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
+                                <span className="text-gray-900 font-medium">{item.scenario}</span>
+                            </div>
+                            <button
+                                onClick={() => setRevealedClinical(prev => ({ ...prev, [index]: !prev[index] }))}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                {revealedClinical[index] ? 'Hide Answer' : 'Reveal Answer'}
+                            </button>
+                            {revealedClinical[index] && (
+                                <div className="mt-4 space-y-2 text-gray-700">
+                                    <p><span className="font-bold">Answer:</span> {item.answer}</p>
+                                    <p><span className="font-bold">Explanation:</span> {item.explanation}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

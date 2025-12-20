@@ -318,9 +318,58 @@ const studyDataSchema: Schema = {
         },
         required: ["statement", "isTrue", "explanation"]
       }
+    },
+    fillInTheBlank: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          question: { type: Type.STRING },
+          answer: { type: Type.STRING },
+          explanation: { type: Type.STRING },
+          difficulty: { type: Type.STRING }
+        },
+        required: ["question", "answer", "explanation"]
+      }
+    },
+    matching: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          prompt: { type: Type.STRING },
+          pairs: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                left: { type: Type.STRING },
+                right: { type: Type.STRING }
+              },
+              required: ["left", "right"]
+            }
+          },
+          explanation: { type: Type.STRING },
+          difficulty: { type: Type.STRING }
+        },
+        required: ["prompt", "pairs", "explanation"]
+      }
+    },
+    clinical: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          scenario: { type: Type.STRING },
+          answer: { type: Type.STRING },
+          explanation: { type: Type.STRING },
+          difficulty: { type: Type.STRING }
+        },
+        required: ["scenario", "answer", "explanation"]
+      }
     }
   },
-  required: ["playlistTitle", "videoTitle", "videoUrl", "summary", "flashcards", "multipleChoice", "trueFalse"]
+  required: ["playlistTitle", "videoTitle", "videoUrl", "summary", "flashcards", "multipleChoice", "trueFalse", "fillInTheBlank", "matching", "clinical"]
 };
 
 export const generateVideoStudyData = async (
@@ -360,9 +409,12 @@ export const generateVideoStudyData = async (
     - "videoUrl": "${video.url}"
     - "playlistTitle": "${playlist.title}"
     - "summary": A detailed 3-4 paragraph high-yield summary of key clinical concepts from this video
-    - "flashcards": Exactly 10 detailed flashcards (Front/Back format) based on the video content${transcript ? ' and transcript' : ''}. ${forceRegenerate ? 'Generate DIFFERENT flashcards from what might already exist.' : ''}
+    - "flashcards": Exactly 25 detailed flashcards (Front/Back format) based on the video content${transcript ? ' and transcript' : ''}. ${forceRegenerate ? 'Generate DIFFERENT flashcards from what might already exist.' : ''}
     - "multipleChoice": Exactly 5 clinical scenario MCQs with 4 options each, correct answer, and detailed explanation. ${forceRegenerate ? 'Create DIFFERENT questions from what might already exist.' : ''}
     - "trueFalse": Exactly 5 True/False statements with detailed reasoning. ${forceRegenerate ? 'Create DIFFERENT statements from what might already exist.' : ''}
+    - "fillInTheBlank": Exactly 5 fill-in-the-blank questions with an answer and explanation. ${forceRegenerate ? 'Create DIFFERENT fill-in-the-blank questions from what might already exist.' : ''}
+    - "matching": Exactly 5 matching exercises. Each should include a prompt, a list of left/right pairs to match, and a short explanation. ${forceRegenerate ? 'Create DIFFERENT matching exercises from what might already exist.' : ''}
+    - "clinical": Exactly 5 clinical scenario questions. Provide the scenario, the answer, and a detailed explanation. ${forceRegenerate ? 'Create DIFFERENT clinical scenarios from what might already exist.' : ''}
     
     Ensure 100% accuracy to Dr. Ryan's Mental Dental curriculum.
   `;
@@ -387,6 +439,9 @@ export const generateVideoStudyData = async (
     data.playlistTitle = playlist.title;
     data.videoTitle = video.title;
     data.videoUrl = video.url;
+    data.fillInTheBlank = data.fillInTheBlank || [];
+    data.matching = data.matching || [];
+    data.clinical = data.clinical || [];
 
     // If re-analyzing, merge with existing cache
     if (forceRegenerate) {
