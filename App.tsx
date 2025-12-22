@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { PLAYLISTS } from './constants';
+import { PLAYLISTS, INBDE_INFO } from './constants';
 import { Playlist, AppState, StudyData, VideoInfo } from './types';
 import { PlaylistCard } from './components/PlaylistCard';
 import { VideoSelector } from './components/VideoSelector';
 import { JsonViewer } from './components/JsonViewer';
 import { StudyMode } from './components/StudyMode';
+import { ExamInfo } from './components/ExamInfo';
 import { generateVideoStudyData, getVideosForPlaylist } from './services/geminiService';
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
     return process.env.API_KEY || '';
   });
   const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey);
+  const [showExamInfo, setShowExamInfo] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
@@ -121,6 +123,12 @@ const App: React.FC = () => {
                 </span>
               )}
               <button
+                onClick={() => setShowExamInfo(true)}
+                className="text-sm text-gray-600 hover:text-blue-600 font-medium transition-colors flex items-center gap-1"
+              >
+                📋 INBDE Info
+              </button>
+              <button
                 onClick={() => setShowApiKeyInput(true)}
                 className="text-sm text-gray-600 hover:text-blue-600 font-medium transition-colors"
               >
@@ -130,6 +138,11 @@ const App: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      {/* Exam Info Modal */}
+      {showExamInfo && (
+        <ExamInfo onClose={() => setShowExamInfo(false)} />
+      )}
 
       {/* API Key Modal */}
       {showApiKeyInput && (
@@ -260,12 +273,45 @@ const App: React.FC = () => {
         {/* SELECTION STATE */}
         {appState === AppState.IDLE && (
           <>
+            {/* Hero Section */}
             <div className="text-center mb-12">
               <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl mb-4">
                 Prepare for the INBDE
               </h1>
-              <p className="max-w-2xl mx-auto text-lg text-gray-500">
-                Select a playlist to begin studying. You can choose individual videos to generate focused study materials.
+              <p className="max-w-3xl mx-auto text-lg text-gray-500 mb-6">
+                Master the Integrated National Board Dental Examination with comprehensive AI-powered study materials. 
+                Generate flashcards, practice questions, and clinical scenarios from Mental Dental videos.
+              </p>
+              
+              {/* Quick Stats */}
+              <div className="flex flex-wrap justify-center gap-4 mb-8">
+                <div className="bg-white px-6 py-3 rounded-full shadow-sm border border-gray-200 flex items-center gap-2">
+                  <span className="text-2xl">📝</span>
+                  <span className="text-gray-700"><strong>{INBDE_INFO.format.totalQuestions}</strong> Questions</span>
+                </div>
+                <div className="bg-white px-6 py-3 rounded-full shadow-sm border border-gray-200 flex items-center gap-2">
+                  <span className="text-2xl">📅</span>
+                  <span className="text-gray-700"><strong>{INBDE_INFO.format.days}</strong> Test Days</span>
+                </div>
+                <div className="bg-white px-6 py-3 rounded-full shadow-sm border border-gray-200 flex items-center gap-2">
+                  <span className="text-2xl">🎯</span>
+                  <span className="text-gray-700">Pass Score: <strong>{INBDE_INFO.scoring.passingScore}</strong></span>
+                </div>
+                <button
+                  onClick={() => setShowExamInfo(true)}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-sm flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                >
+                  <span>📋</span>
+                  <span className="font-semibold">View Full Exam Details</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Study Materials Section */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">📚 Study Playlists</h2>
+              <p className="text-gray-600 mb-6">
+                Select a playlist to begin studying. Choose individual videos to generate comprehensive study materials including flashcards, MCQs, and clinical scenarios.
               </p>
             </div>
 
@@ -278,6 +324,27 @@ const App: React.FC = () => {
                   disabled={false}
                 />
               ))}
+            </div>
+
+            {/* Footer Info */}
+            <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
+              <div className="grid md:grid-cols-3 gap-6 text-center">
+                <div>
+                  <div className="text-3xl mb-2">🎯</div>
+                  <h3 className="font-bold text-gray-900 mb-1">AI-Powered Learning</h3>
+                  <p className="text-sm text-gray-600">Generate study materials using Google Gemini AI from Mental Dental videos</p>
+                </div>
+                <div>
+                  <div className="text-3xl mb-2">📖</div>
+                  <h3 className="font-bold text-gray-900 mb-1">Comprehensive Coverage</h3>
+                  <p className="text-sm text-gray-600">15 playlists covering all INBDE content domains and high-yield topics</p>
+                </div>
+                <div>
+                  <div className="text-3xl mb-2">🏆</div>
+                  <h3 className="font-bold text-gray-900 mb-1">Active Learning</h3>
+                  <p className="text-sm text-gray-600">Flashcards, MCQs, clinical scenarios, matching exercises, and more</p>
+                </div>
+              </div>
             </div>
           </>
         )}
