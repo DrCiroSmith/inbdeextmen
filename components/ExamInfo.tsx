@@ -28,13 +28,18 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="exam-info-title"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-3xl font-bold mb-2">{INBDE_INFO.name}</h2>
+              <h2 id="exam-info-title" className="text-3xl font-bold mb-2">{INBDE_INFO.name}</h2>
               <p className="text-blue-100">{INBDE_INFO.fullName}</p>
             </div>
             <button
@@ -50,12 +55,15 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 bg-gray-50">
+        <div className="border-b border-gray-200 bg-gray-50" role="tablist" aria-label="Exam information tabs">
           <div className="flex overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`tabpanel-${tab.id}`}
                 className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
@@ -73,7 +81,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
         <div className="flex-1 overflow-y-auto p-6">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
-            <div className="space-y-6">
+            <div id="tabpanel-overview" role="tabpanel" aria-labelledby="tab-overview" className="space-y-6">
               <div className="bg-blue-50 rounded-xl p-6">
                 <p className="text-gray-700 leading-relaxed">{INBDE_INFO.description}</p>
               </div>
@@ -173,7 +181,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
 
           {/* Content Domains Tab */}
           {activeTab === 'domains' && (
-            <div className="space-y-8">
+            <div id="tabpanel-domains" role="tabpanel" aria-labelledby="tab-domains" className="space-y-8">
               {/* Foundation Knowledge */}
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -272,7 +280,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
 
           {/* Study Schedule Tab */}
           {activeTab === 'schedule' && (
-            <div className="space-y-6">
+            <div id="tabpanel-schedule" role="tabpanel" aria-labelledby="tab-schedule" className="space-y-6">
               <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">📚 Recommended Study Timeline</h3>
                 <p className="text-gray-600">A structured 20-30 week study plan for comprehensive INBDE preparation</p>
@@ -339,7 +347,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
 
           {/* High-Yield Topics Tab */}
           {activeTab === 'highyield' && (
-            <div className="space-y-4">
+            <div id="tabpanel-highyield" role="tabpanel" aria-labelledby="tab-highyield" className="space-y-4">
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
                 <p className="text-gray-700 flex items-center gap-2">
                   <span className="text-2xl">⭐</span>
@@ -387,7 +395,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
 
           {/* Exam Day Tips Tab */}
           {activeTab === 'tips' && (
-            <div className="space-y-6">
+            <div id="tabpanel-tips" role="tabpanel" aria-labelledby="tab-tips" className="space-y-6">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-6">
                 <h3 className="text-xl font-bold mb-2">🎯 Exam Day Checklist</h3>
                 <p className="text-blue-100">Essential tips to maximize your performance on test day</p>
