@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MOCK_EXAM_QUESTIONS, MockExamQuestion } from '../mockExamQuestions';
 
 interface MockExamProps {
@@ -153,20 +153,35 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) 
         });
     };
 
+    const questionContainerRef = useRef<HTMLDivElement>(null);
+
+    const scrollToTop = () => {
+        // Scroll to top of question container on mobile
+        if (questionContainerRef.current) {
+            questionContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            // Fallback to window scroll
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     const goToQuestion = (index: number) => {
         setCurrentQuestionIndex(index);
+        scrollToTop();
     };
 
     const nextQuestion = () => {
         const currentSession = sessions[currentSessionIndex];
         if (currentQuestionIndex < currentSession.questions.length - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
+            scrollToTop();
         }
     };
 
     const prevQuestion = () => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(prev => prev - 1);
+            scrollToTop();
         }
     };
 
@@ -365,7 +380,8 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) 
 
         return (
             <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b sticky top-0 z-50`}>
+                {/* Sticky Header - Hidden on mobile to save space */}
+                <div className={`hidden md:block ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b sticky top-0 z-50`}>
                     <div className="max-w-7xl mx-auto px-4 py-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -404,8 +420,9 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) 
                     </div>
                 </div>
 
-                <div className="max-w-6xl mx-auto px-4 py-6 flex gap-6">
-                    <div className="w-64 flex-shrink-0">
+                <div className="max-w-6xl mx-auto px-4 py-6 md:flex gap-6">
+                    {/* Left Sidebar Navigator - Desktop Only */}
+                    <div className="hidden md:block w-64 flex-shrink-0">
                         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-4 sticky top-24`}>
                             <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-3`}>Question Navigator</h3>
                             <div className="grid grid-cols-5 gap-2">
@@ -434,8 +451,38 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) 
                         </div>
                     </div>
 
-                    <div className="flex-1">
-                        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-6`}>
+                    <div className="flex-1" ref={questionContainerRef}>
+                        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-4 md:p-6`}>
+                            {/* Mobile Header Info */}
+                            <div className="md:hidden mb-4 pb-4 border-b border-gray-700">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        Session {currentSession.sessionNumber}/{sessions.length} • Q{currentQuestionIndex + 1}/{currentSession.questions.length}
+                                    </span>
+                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full font-mono text-sm ${
+                                        timeWarning 
+                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400' 
+                                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400'
+                                    }`}>
+                                        <span className="text-xs">⏱️</span>
+                                        <span className="font-bold">{formatTime(currentSession.timeRemaining)}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>{answeredCount}/{currentSession.questions.length} answered</span>
+                                    <button
+                                        onClick={() => {
+                                            if (confirm('End this session? You cannot return to these questions.')) {
+                                                endSession();
+                                            }
+                                        }}
+                                        className="px-3 py-1 bg-red-600 text-white rounded-md text-xs font-semibold hover:bg-red-700"
+                                    >
+                                        End Session
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="flex items-center justify-between mb-4">
                                 <span className={`px-3 py-1 ${darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-700'} rounded-full text-sm font-medium`}>
                                     {currentQuestion.subject}
@@ -508,6 +555,39 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) 
                                     </button>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Mobile Bottom Question Navigator */}
+                        <div className={`md:hidden mt-4 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-4`}>
+                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-3 text-sm`}>Question Navigator</h3>
+                            <div className="grid grid-cols-8 gap-2">
+                                {currentSession.questions.map((_, index) => {
+                                    const isAnswered = currentSession.answers[index] !== undefined;
+                                    const isFlagged = currentSession.flagged.has(index);
+                                    const isCurrent = index === currentQuestionIndex;
+                                    
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => goToQuestion(index)}
+                                            className={`h-10 rounded-lg text-xs font-medium transition-colors relative ${
+                                                isCurrent ? 'bg-blue-600 text-white'
+                                                    : isAnswered 
+                                                        ? darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700'
+                                                        : darkMode ? 'bg-gray-700 text-gray-400 active:bg-gray-600' : 'bg-gray-100 text-gray-600 active:bg-gray-200'
+                                            }`}
+                                        >
+                                            {index + 1}
+                                            {isFlagged && <span className="absolute -top-1 -right-1 text-orange-500 text-xs">🚩</span>}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {flaggedCount > 0 && (
+                                <div className="mt-3 text-xs text-center text-orange-600">
+                                    🚩 {flaggedCount} question{flaggedCount !== 1 ? 's' : ''} flagged
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
