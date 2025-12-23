@@ -16,7 +16,9 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
     const [isFlipped, setIsFlipped] = useState(false);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
     const [showResults, setShowResults] = useState(false);
-    const [revealedFill, setRevealedFill] = useState<Record<number, boolean>>({});
+    const [fillAnswers, setFillAnswers] = useState<Record<number, string>>({});
+    const [fillChecked, setFillChecked] = useState<Record<number, boolean>>({});
+    const [showFillHint, setShowFillHint] = useState<Record<number, boolean>>({});
     const [revealedClinical, setRevealedClinical] = useState<Record<number, boolean>>({});
     const [newFlashcard, setNewFlashcard] = useState({ front: '', back: '' });
     const [newQuiz, setNewQuiz] = useState({ question: '', options: '', correctAnswer: '', explanation: '' });
@@ -145,6 +147,31 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
             ]
         });
         setNewClinical({ scenario: '', answer: '', explanation: '' });
+    };
+
+    // Fill-in-the-blank handlers
+    const handleFillAnswerChange = (index: number, value: string) => {
+        setFillAnswers(prev => ({ ...prev, [index]: value }));
+        // Reset checked state when user types
+        if (fillChecked[index]) {
+            setFillChecked(prev => ({ ...prev, [index]: false }));
+        }
+    };
+
+    const handleCheckFillAnswer = (index: number) => {
+        setFillChecked(prev => ({ ...prev, [index]: true }));
+    };
+
+    const isFillAnswerCorrect = (index: number, correctAnswer: string): boolean => {
+        const userAnswer = (fillAnswers[index] || '').toLowerCase().trim();
+        const correct = correctAnswer.toLowerCase().trim();
+        return userAnswer === correct;
+    };
+
+    const handleResetFillQuestion = (index: number) => {
+        setFillAnswers(prev => ({ ...prev, [index]: '' }));
+        setFillChecked(prev => ({ ...prev, [index]: false }));
+        setShowFillHint(prev => ({ ...prev, [index]: false }));
     };
 
     const handleDropMatch = (exerciseIndex: number, rightIndex: number, leftIndex: number) => {
@@ -494,26 +521,110 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
             {/* Fill-in-the-Blank View */}
             {mode === 'fillInTheBlank' && (
                 <div className="max-w-3xl mx-auto space-y-8">
-                    {data.fillInTheBlank?.map((item, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <div className="mb-4">
-                                <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
-                                <span className="text-gray-900 font-medium">{item.question}</span>
-                            </div>
-                            <button
-                                onClick={() => setRevealedFill(prev => ({ ...prev, [index]: !prev[index] }))}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                            >
-                                {revealedFill[index] ? 'Hide Answer' : 'Reveal Answer'}
-                            </button>
-                            {revealedFill[index] && (
-                                <div className="mt-4 space-y-2 text-gray-700">
-                                    <p><span className="font-bold">Answer:</span> {item.answer}</p>
-                                    <p><span className="font-bold">Explanation:</span> {item.explanation}</p>
+                    {data.fillInTheBlank?.map((item, index) => {
+                        const isChecked = fillChecked[index];
+                        const isCorrect = isChecked && isFillAnswerCorrect(index, item.answer);
+                        const showHint = showFillHint[index];
+                        
+                        return (
+                            <div key={index} className={`bg-white rounded-xl shadow-sm border-2 p-6 transition-colors ${
+                                isChecked 
+                                    ? (isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50')
+                                    : 'border-gray-200'
+                            }`}>
+                                <div className="mb-4">
+                                    <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
+                                    <span className="text-gray-900 font-medium">{item.question}</span>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+                                
+                                {/* Input field for answer */}
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                                        Your Answer:
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={fillAnswers[index] || ''}
+                                        onChange={(e) => handleFillAnswerChange(index, e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && !isChecked && handleCheckFillAnswer(index)}
+                                        placeholder="Type your answer here..."
+                                        disabled={isChecked && isCorrect}
+                                        className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 transition-colors ${
+                                            isChecked
+                                                ? (isCorrect 
+                                                    ? 'border-green-400 bg-green-100 text-green-800' 
+                                                    : 'border-red-400 bg-red-100 text-red-800')
+                                                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                                        }`}
+                                    />
+                                </div>
+
+                                {/* Action buttons */}
+                                <div className="flex flex-wrap gap-3 mb-4">
+                                    {!isChecked ? (
+                                        <>
+                                            <button
+                                                onClick={() => handleCheckFillAnswer(index)}
+                                                disabled={!(fillAnswers[index] || '').trim()}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Check Answer
+                                            </button>
+                                            <button
+                                                onClick={() => setShowFillHint(prev => ({ ...prev, [index]: !prev[index] }))}
+                                                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                            >
+                                                {showHint ? 'Hide Hint' : 'Show Hint'}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleResetFillQuestion(index)}
+                                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        >
+                                            Try Again
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Hint */}
+                                {showHint && !isChecked && (
+                                    <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <p className="text-sm text-yellow-800">
+                                            <span className="font-bold">💡 Hint:</span> The answer has {item.answer?.length || 0} characters
+                                            {item.answer && item.answer.length > 0 && ` and starts with "${item.answer[0].toUpperCase()}"`}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Result feedback */}
+                                {isChecked && (
+                                    <div className="space-y-3">
+                                        {isCorrect ? (
+                                            <div className="flex items-center gap-2 text-green-700 font-semibold">
+                                                <span className="text-xl">✓</span> Correct! Well done!
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2 text-red-700 font-semibold">
+                                                    <span className="text-xl">✗</span> Not quite right
+                                                </div>
+                                                <p className="text-gray-700">
+                                                    <span className="font-bold">Correct Answer:</span>{' '}
+                                                    <span className="text-green-700 font-semibold">{item.answer}</span>
+                                                </p>
+                                            </div>
+                                        )}
+                                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                            <p className="text-gray-700">
+                                                <span className="font-bold text-blue-700">📖 Explanation:</span> {item.explanation}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
 
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a fill-in-the-blank</h3>

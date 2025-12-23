@@ -700,3 +700,189 @@ export const EXAM_DAY_TIPS: string[] = [
   'Manage your time - approximately 1 minute per question',
   'Stay calm and confident - you have prepared for this!'
 ];
+
+// ============================================================================
+// STUDY RESOURCES
+// ============================================================================
+
+export interface StudyResource {
+  name: string;
+  description: string;
+  url: string;
+  type: 'website' | 'video' | 'book' | 'course' | 'flashcards' | 'practice';
+  isPaid: boolean;
+  icon: string;
+}
+
+export interface ResourceCategory {
+  category: string;
+  description: string;
+  resources: StudyResource[];
+}
+
+export const STUDY_RESOURCES: ResourceCategory[] = [
+  {
+    category: 'Official Resources',
+    description: 'Official exam information and registration',
+    resources: [
+      {
+        name: 'ADA INBDE Official Page',
+        description: 'Official exam information, registration, and candidate guide from the American Dental Association',
+        url: 'https://www.ada.org/education/testing/inbde',
+        type: 'website',
+        isPaid: false,
+        icon: '🏛️'
+      },
+      {
+        name: 'JCNDE Candidate Guide',
+        description: 'Complete candidate guide with exam specifications and content outline',
+        url: 'https://www.ada.org/education/testing/inbde',
+        type: 'website',
+        isPaid: false,
+        icon: '📋'
+      }
+    ]
+  },
+  {
+    category: 'Video Courses',
+    description: 'Comprehensive video-based learning resources',
+    resources: [
+      {
+        name: 'Mental Dental (Dr. Ryan)',
+        description: 'Comprehensive free YouTube video series covering all INBDE topics with high-yield content',
+        url: 'https://www.youtube.com/@MentalDental',
+        type: 'video',
+        isPaid: false,
+        icon: '🎬'
+      },
+      {
+        name: 'Dental Bootcamp',
+        description: 'Structured INBDE preparation course with video lectures, practice questions, and study materials',
+        url: 'https://bootcamp.com/inbde',
+        type: 'course',
+        isPaid: true,
+        icon: '🎓'
+      },
+      {
+        name: 'Boards and Beyond Dental',
+        description: 'Concise video lectures organized by topic for efficient board review',
+        url: 'https://www.boardsbeyond.com/',
+        type: 'video',
+        isPaid: true,
+        icon: '📹'
+      }
+    ]
+  },
+  {
+    category: 'Question Banks',
+    description: 'Practice questions and mock exams',
+    resources: [
+      {
+        name: 'Dental Decks',
+        description: 'Classic flashcard system with thousands of board-style questions covering all subjects',
+        url: 'https://www.dentaldecks.com/',
+        type: 'flashcards',
+        isPaid: true,
+        icon: '📚'
+      },
+      {
+        name: 'Crush Dental Boards',
+        description: 'Large question bank with detailed explanations and performance tracking',
+        url: 'https://www.crushdentalboards.com/',
+        type: 'practice',
+        isPaid: true,
+        icon: '💪'
+      },
+      {
+        name: 'INBDE Mastery App',
+        description: 'Mobile app with practice questions, flashcards, and progress tracking',
+        url: 'https://inbdemastery.com/',
+        type: 'practice',
+        isPaid: true,
+        icon: '📱'
+      }
+    ]
+  },
+  {
+    category: 'Textbooks & Study Guides',
+    description: 'Comprehensive reference materials',
+    resources: [
+      {
+        name: 'First Aid for the INBDE',
+        description: 'High-yield facts and exam strategies in the classic First Aid format',
+        url: 'https://www.amazon.com/First-INBDE-Third-Jason-Portnof/dp/1264264933',
+        type: 'book',
+        isPaid: true,
+        icon: '📖'
+      },
+      {
+        name: 'Mosby\'s Review for the NBDE/INBDE',
+        description: 'Comprehensive review book with practice questions and rationales, covers content relevant for INBDE',
+        url: 'https://www.elsevier.com/books/mosbys-review-for-the-nbde/mosby/978-0-323-22562-1',
+        type: 'book',
+        isPaid: true,
+        icon: '📘'
+      },
+      {
+        name: 'BRS Physiology',
+        description: 'Board Review Series book excellent for physiology and biochemistry foundations',
+        url: 'https://www.lww.com/Product/9781975153601',
+        type: 'book',
+        isPaid: true,
+        icon: '🧬'
+      }
+    ]
+  },
+  {
+    category: 'Anatomy Resources',
+    description: 'Specialized anatomy study tools',
+    resources: [
+      {
+        name: 'Netter\'s Head and Neck Anatomy',
+        description: 'Gold standard anatomy atlas with detailed illustrations of head and neck structures',
+        url: 'https://www.elsevier.com/books/netters-head-and-neck-anatomy-for-dentistry/norton/978-0-323-39202-5',
+        type: 'book',
+        isPaid: true,
+        icon: '🦷'
+      },
+      {
+        name: 'Anatomy Zone (YouTube)',
+        description: 'Free 3D anatomy videos covering head and neck structures',
+        url: 'https://www.youtube.com/@AnatomyZone',
+        type: 'video',
+        isPaid: false,
+        icon: '🎥'
+      },
+      {
+        name: 'Kenhub',
+        description: 'Interactive anatomy learning platform with quizzes and 3D models',
+        url: 'https://www.kenhub.com/',
+        type: 'website',
+        isPaid: true,
+        icon: '🔬'
+      }
+    ]
+  },
+  {
+    category: 'Community & Forums',
+    description: 'Connect with other INBDE candidates',
+    resources: [
+      {
+        name: 'Student Doctor Network - INBDE Forum',
+        description: 'Active forum with discussions, study tips, and score reports from past test-takers',
+        url: 'https://forums.studentdoctor.net/forums/dat-inbde-discussions.62/',
+        type: 'website',
+        isPaid: false,
+        icon: '👥'
+      },
+      {
+        name: 'Reddit r/DentalSchool',
+        description: 'Subreddit with INBDE discussions, study strategies, and peer support',
+        url: 'https://www.reddit.com/r/DentalSchool/',
+        type: 'website',
+        isPaid: false,
+        icon: '💬'
+      }
+    ]
+  }
+];
