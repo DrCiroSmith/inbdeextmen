@@ -179,6 +179,58 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
         return correct;
     };
 
+    // Completion tracking for progress pills
+    const isQuizComplete = (): boolean => {
+        if (data.multipleChoice.length === 0) return false;
+        if (!showResults) return false;
+        return calculateScore() === data.multipleChoice.length;
+    };
+
+    const isFillComplete = (): boolean => {
+        const fillItems = data.fillInTheBlank || [];
+        if (fillItems.length === 0) return false;
+        return fillItems.every((item, index) => {
+            const isChecked = fillChecked[index];
+            if (!isChecked) return false;
+            const userAnswer = (fillAnswers[index] || '').toLowerCase().trim();
+            const correct = item.answer.toLowerCase().trim();
+            return userAnswer === correct;
+        });
+    };
+
+    const isMatchingComplete = (): boolean => {
+        const matchingItems = data.matching || [];
+        if (matchingItems.length === 0) return false;
+        return matchingItems.every((exercise, exerciseIndex) => {
+            const matchingState = matchingStates[exerciseIndex];
+            if (!matchingState?.showResults) return false;
+            // Check if all pairs are correctly matched
+            const rightOptions = matchingState.rightOptions;
+            const matches = matchingState.matches;
+            // Pre-compute a map of right values to their indices for O(n) lookup
+            const rightValueToIndex = new Map<string, number>();
+            rightOptions.forEach((val, idx) => rightValueToIndex.set(val, idx));
+            
+            return exercise.pairs.every((pair, pairIndex) => {
+                const rightIndex = rightValueToIndex.get(pair.right);
+                if (rightIndex === undefined) return false;
+                const matchedLeftIndex = matches[rightIndex];
+                return matchedLeftIndex === pairIndex;
+            });
+        });
+    };
+
+    // Get the pill style based on completion status
+    const getProgressPillClass = (isComplete: boolean, isActive: boolean): string => {
+        if (isActive) {
+            return 'bg-blue-600 text-white';
+        }
+        if (isComplete) {
+            return darkMode ? 'bg-green-700 text-green-100' : 'bg-green-500 text-white';
+        }
+        return darkMode ? 'bg-red-800 text-red-200' : 'bg-red-500 text-white';
+    };
+
     const handleAddFlashcard = () => {
         if (!newFlashcard.front.trim() || !newFlashcard.back.trim()) return;
         onUpdateData({
@@ -342,62 +394,90 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                 </button>
             </div>
 
-            {/* Tabs */}
-            <div className={`flex flex-wrap gap-4 mb-8 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} role="tablist">
+            {/* Tabs with Progress Pills */}
+            <div className={`flex flex-wrap gap-3 mb-8 border-b pb-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} role="tablist">
+                {/* Flashcards - no completion tracking needed */}
                 <button
                     onClick={() => setMode('flashcards')}
                     role="tab"
                     aria-selected={mode === 'flashcards'}
-                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'flashcards'
-                        ? 'text-blue-600 border-b-2 border-blue-600'
-                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                    className={`px-4 py-2 rounded-full font-medium transition-all ${mode === 'flashcards'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : darkMode 
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                 >
-                    Flashcards ({data.flashcards.length})
+                    📚 Flashcards ({data.flashcards.length})
                 </button>
+                
+                {/* Quiz - with completion tracking */}
                 <button
                     onClick={() => setMode('quiz')}
                     role="tab"
                     aria-selected={mode === 'quiz'}
-                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'quiz'
-                        ? 'text-blue-600 border-b-2 border-blue-600'
-                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                    className={`px-4 py-2 rounded-full font-medium transition-all ${mode === 'quiz'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : data.multipleChoice.length > 0 
+                            ? getProgressPillClass(isQuizComplete(), false)
+                            : darkMode 
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                 >
+                    {data.multipleChoice.length > 0 && (isQuizComplete() ? '✓ ' : '○ ')}
                     Quiz ({data.multipleChoice.length})
                 </button>
+                
+                {/* Fill-in-the-Blank - with completion tracking */}
                 <button
                     onClick={() => setMode('fillInTheBlank')}
                     role="tab"
                     aria-selected={mode === 'fillInTheBlank'}
-                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'fillInTheBlank'
-                        ? 'text-blue-600 border-b-2 border-blue-600'
-                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                    className={`px-4 py-2 rounded-full font-medium transition-all ${mode === 'fillInTheBlank'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : (data.fillInTheBlank?.length || 0) > 0 
+                            ? getProgressPillClass(isFillComplete(), false)
+                            : darkMode 
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                 >
+                    {(data.fillInTheBlank?.length || 0) > 0 && (isFillComplete() ? '✓ ' : '○ ')}
                     Fill-in-the-Blank ({data.fillInTheBlank?.length || 0})
                 </button>
+                
+                {/* Matching - with completion tracking */}
                 <button
                     onClick={() => setMode('matching')}
                     role="tab"
                     aria-selected={mode === 'matching'}
-                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'matching'
-                        ? 'text-blue-600 border-b-2 border-blue-600'
-                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                    className={`px-4 py-2 rounded-full font-medium transition-all ${mode === 'matching'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : (data.matching?.length || 0) > 0 
+                            ? getProgressPillClass(isMatchingComplete(), false)
+                            : darkMode 
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                 >
+                    {(data.matching?.length || 0) > 0 && (isMatchingComplete() ? '✓ ' : '○ ')}
                     Matching ({data.matching?.length || 0})
                 </button>
+                
+                {/* Clinical - no completion tracking needed */}
                 <button
                     onClick={() => setMode('clinical')}
                     role="tab"
                     aria-selected={mode === 'clinical'}
-                    className={`pb-4 px-4 font-medium transition-colors ${mode === 'clinical'
-                        ? 'text-blue-600 border-b-2 border-blue-600'
-                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                    className={`px-4 py-2 rounded-full font-medium transition-all ${mode === 'clinical'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : darkMode 
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                 >
-                    Clinical ({data.clinical?.length || 0})
+                    🏥 Clinical ({data.clinical?.length || 0})
                 </button>
             </div>
 
@@ -504,21 +584,25 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                     {!showResults ? (
                         <div className="space-y-8">
                             {data.multipleChoice.map((quiz, index) => (
-                                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <div key={index} className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border p-6`}>
                                     <div className="flex items-start gap-4">
-                                        <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
+                                        <span className={`flex-shrink-0 w-8 h-8 ${darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-600'} rounded-full flex items-center justify-center font-bold text-sm`}>
                                             {index + 1}
                                         </span>
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-medium text-gray-900 mb-4">{quiz.question}</h3>
+                                            <h3 className={`text-lg font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>{quiz.question}</h3>
                                             <div className="space-y-3">
                                                 {quiz.options.map((option, optIndex) => (
                                                     <button
                                                         key={optIndex}
                                                         onClick={() => handleAnswerSelect(index, option)}
                                                         className={`w-full text-left p-4 rounded-lg border-2 transition-all ${quizAnswers[index] === option
-                                                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                            : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                                                            ? darkMode 
+                                                                ? 'border-blue-500 bg-blue-900/50 text-blue-300'
+                                                                : 'border-blue-500 bg-blue-50 text-blue-700'
+                                                            : darkMode
+                                                                ? 'border-gray-600 hover:border-gray-500 hover:bg-gray-700 text-gray-200'
+                                                                : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50 text-gray-800'
                                                             }`}
                                                     >
                                                         {option}
@@ -542,9 +626,9 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                         </div>
                     ) : (
                         <div className="space-y-8">
-                            <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-8">
-                                <h3 className="text-3xl font-bold text-gray-900 mb-2">Quiz Complete!</h3>
-                                <p className="text-xl text-gray-600">
+                            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-lg p-8 text-center mb-8`}>
+                                <h3 className={`text-3xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2`}>Quiz Complete!</h3>
+                                <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                     You scored <span className="text-blue-600 font-bold">{calculateScore()}</span> out of {data.multipleChoice.length}
                                 </p>
                                 <button
@@ -560,29 +644,31 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
 
                             {data.multipleChoice.map((quiz, index) => (
                                 <div key={index} className={`rounded-xl border p-6 ${quizAnswers[index] === quiz.correctAnswer
-                                    ? 'bg-green-50 border-green-200'
-                                    : 'bg-red-50 border-red-200'
+                                    ? darkMode ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200'
+                                    : darkMode ? 'bg-red-900/30 border-red-700' : 'bg-red-50 border-red-200'
                                     }`}>
                                     <div className="flex gap-3 mb-4">
-                                        <span className="font-bold text-gray-700">{index + 1}.</span>
-                                        <h4 className="font-medium text-gray-900">{quiz.question}</h4>
+                                        <span className={`font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{index + 1}.</span>
+                                        <h4 className={`font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{quiz.question}</h4>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                        <div className="p-3 bg-white rounded border border-gray-200">
+                                        <div className={`p-3 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded border`}>
                                             <span className="text-xs text-gray-500 uppercase">Your Answer</span>
-                                            <p className={`font-medium ${quizAnswers[index] === quiz.correctAnswer ? 'text-green-600' : 'text-red-600'
+                                            <p className={`font-medium ${quizAnswers[index] === quiz.correctAnswer 
+                                                ? darkMode ? 'text-green-400' : 'text-green-600' 
+                                                : darkMode ? 'text-red-400' : 'text-red-600'
                                                 }`}>
                                                 {quizAnswers[index]}
                                             </p>
                                         </div>
-                                        <div className="p-3 bg-white rounded border border-gray-200">
+                                        <div className={`p-3 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded border`}>
                                             <span className="text-xs text-gray-500 uppercase">Correct Answer</span>
-                                            <p className="font-medium text-green-600">{quiz.correctAnswer}</p>
+                                            <p className={`font-medium ${darkMode ? 'text-green-400' : 'text-green-600'}`}>{quiz.correctAnswer}</p>
                                         </div>
                                     </div>
 
-                                    <div className="text-sm text-gray-600 bg-white/50 p-4 rounded-lg">
+                                    <div className={`text-sm ${darkMode ? 'text-gray-300 bg-gray-800/50' : 'text-gray-600 bg-white/50'} p-4 rounded-lg`}>
                                         <span className="font-bold">Explanation:</span> {quiz.explanation}
                                     </div>
                                 </div>
@@ -590,35 +676,35 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                         </div>
                     )}
 
-                    <div className="mt-10 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a quiz question</h3>
+                    <div className={`mt-10 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-sm border p-6`}>
+                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Add a quiz question</h3>
                         <div className="space-y-4">
                             <input
                                 type="text"
                                 value={newQuiz.question}
                                 onChange={(event) => setNewQuiz((prev) => ({ ...prev, question: event.target.value }))}
                                 placeholder="Question"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <input
                                 type="text"
                                 value={newQuiz.options}
                                 onChange={(event) => setNewQuiz((prev) => ({ ...prev, options: event.target.value }))}
                                 placeholder="Options (comma separated)"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <input
                                 type="text"
                                 value={newQuiz.correctAnswer}
                                 onChange={(event) => setNewQuiz((prev) => ({ ...prev, correctAnswer: event.target.value }))}
                                 placeholder="Correct answer"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <textarea
                                 value={newQuiz.explanation}
                                 onChange={(event) => setNewQuiz((prev) => ({ ...prev, explanation: event.target.value }))}
                                 placeholder="Explanation"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <button
                                 onClick={handleAddQuiz}
@@ -646,19 +732,21 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                         const showHint = showFillHint[index];
                         
                         return (
-                            <div key={index} className={`bg-white rounded-xl shadow-sm border-2 p-6 transition-colors ${
+                            <div key={index} className={`rounded-xl shadow-sm border-2 p-6 transition-colors ${
                                 isChecked 
-                                    ? (isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50')
-                                    : 'border-gray-200'
+                                    ? (isCorrect 
+                                        ? darkMode ? 'border-green-600 bg-green-900/30' : 'border-green-300 bg-green-50' 
+                                        : darkMode ? 'border-red-600 bg-red-900/30' : 'border-red-300 bg-red-50')
+                                    : darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
                             }`}>
                                 <div className="mb-4">
-                                    <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
-                                    <span className="text-gray-900 font-medium">{item.question}</span>
+                                    <span className={`font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{index + 1}.</span>{' '}
+                                    <span className={`${darkMode ? 'text-gray-100' : 'text-gray-900'} font-medium`}>{item.question}</span>
                                 </div>
                                 
                                 {/* Input field for answer */}
                                 <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                                    <label className={`block text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
                                         Your Answer:
                                     </label>
                                     <input
@@ -671,9 +759,11 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                         className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 transition-colors ${
                                             isChecked
                                                 ? (isCorrect 
-                                                    ? 'border-green-400 bg-green-100 text-green-800' 
-                                                    : 'border-red-400 bg-red-100 text-red-800')
-                                                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                                                    ? darkMode ? 'border-green-500 bg-green-900/50 text-green-300' : 'border-green-400 bg-green-100 text-green-800' 
+                                                    : darkMode ? 'border-red-500 bg-red-900/50 text-red-300' : 'border-red-400 bg-red-100 text-red-800')
+                                                : darkMode 
+                                                    ? 'border-gray-600 bg-gray-700 text-gray-100 focus:ring-blue-500 focus:border-blue-500' 
+                                                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                                         }`}
                                     />
                                 </div>
@@ -691,7 +781,11 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                             </button>
                                             <button
                                                 onClick={() => setShowFillHint(prev => ({ ...prev, [index]: !prev[index] }))}
-                                                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                                className={`px-4 py-2 font-medium border rounded-lg transition-colors ${
+                                                    darkMode 
+                                                        ? 'text-gray-300 hover:text-gray-100 border-gray-600 hover:bg-gray-700' 
+                                                        : 'text-gray-600 hover:text-gray-800 border-gray-300 hover:bg-gray-50'
+                                                }`}
                                             >
                                                 {showHint ? 'Hide Hint' : 'Show Hint'}
                                             </button>
@@ -699,7 +793,11 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                     ) : (
                                         <button
                                             onClick={() => handleResetFillQuestion(index)}
-                                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                            className={`px-4 py-2 font-medium border rounded-lg transition-colors ${
+                                                darkMode 
+                                                    ? 'text-gray-300 hover:text-gray-100 border-gray-600 hover:bg-gray-700' 
+                                                    : 'text-gray-600 hover:text-gray-800 border-gray-300 hover:bg-gray-50'
+                                            }`}
                                         >
                                             Try Again
                                         </button>
@@ -708,8 +806,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
 
                                 {/* Hint */}
                                 {showHint && !isChecked && (
-                                    <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                        <p className="text-sm text-yellow-800">
+                                    <div className={`mb-4 p-3 rounded-lg border ${darkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'}`}>
+                                        <p className={`text-sm ${darkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
                                             <span className="font-bold">💡 Hint:</span> The answer has {item.answer?.length || 0} characters
                                             {item.answer && item.answer.length > 0 && ` and starts with "${item.answer[0].toUpperCase()}"`}
                                         </p>
@@ -720,23 +818,23 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                 {isChecked && (
                                     <div className="space-y-3">
                                         {isCorrect ? (
-                                            <div className="flex items-center gap-2 text-green-700 font-semibold">
+                                            <div className={`flex items-center gap-2 font-semibold ${darkMode ? 'text-green-400' : 'text-green-700'}`}>
                                                 <span className="text-xl">✓</span> Correct! Well done!
                                             </div>
                                         ) : (
                                             <div className="space-y-2">
-                                                <div className="flex items-center gap-2 text-red-700 font-semibold">
+                                                <div className={`flex items-center gap-2 font-semibold ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
                                                     <span className="text-xl">✗</span> Not quite right
                                                 </div>
-                                                <p className="text-gray-700">
+                                                <p className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
                                                     <span className="font-bold">Correct Answer:</span>{' '}
-                                                    <span className="text-green-700 font-semibold">{item.answer}</span>
+                                                    <span className={`font-semibold ${darkMode ? 'text-green-400' : 'text-green-700'}`}>{item.answer}</span>
                                                 </p>
                                             </div>
                                         )}
-                                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                            <p className="text-gray-700">
-                                                <span className="font-bold text-blue-700">📖 Explanation:</span> {item.explanation}
+                                        <div className={`p-3 rounded-lg border ${darkMode ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
+                                            <p className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                                <span className={`font-bold ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>📖 Explanation:</span> {item.explanation}
                                             </p>
                                         </div>
                                     </div>
@@ -745,28 +843,28 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                         );
                     })}
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a fill-in-the-blank</h3>
+                    <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-sm border p-6`}>
+                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Add a fill-in-the-blank</h3>
                         <div className="space-y-4">
                             <input
                                 type="text"
                                 value={newFill.question}
                                 onChange={(event) => setNewFill((prev) => ({ ...prev, question: event.target.value }))}
                                 placeholder="Prompt or question"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <input
                                 type="text"
                                 value={newFill.answer}
                                 onChange={(event) => setNewFill((prev) => ({ ...prev, answer: event.target.value }))}
                                 placeholder="Answer"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <textarea
                                 value={newFill.explanation}
                                 onChange={(event) => setNewFill((prev) => ({ ...prev, explanation: event.target.value }))}
                                 placeholder="Explanation"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <button
                                 onClick={handleAddFill}
@@ -789,14 +887,14 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                             const rightOptions = matchingState?.rightOptions ?? [];
                             const matches = matchingState?.matches ?? {};
                             return (
-                                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <div key={index} className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border p-6`}>
                                     <div className="mb-4">
-                                        <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
-                                        <span className="text-gray-900 font-medium">{exercise.prompt}</span>
+                                        <span className={`font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{index + 1}.</span>{' '}
+                                        <span className={`${darkMode ? 'text-gray-100' : 'text-gray-900'} font-medium`}>{exercise.prompt}</span>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
-                                            <p className="text-xs uppercase tracking-wide text-gray-400">Drag these terms</p>
+                                            <p className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Drag these terms</p>
                                             {exercise.pairs.map((pair, leftIndex) => (
                                                 <div
                                                     key={pair.left}
@@ -805,14 +903,18 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                         event.dataTransfer.setData('text/plain', String(leftIndex));
                                                         event.dataTransfer.effectAllowed = 'move';
                                                     }}
-                                                    className="p-3 bg-blue-50 rounded-lg border border-blue-100 text-blue-900 font-medium shadow-sm cursor-grab active:cursor-grabbing"
+                                                    className={`p-3 rounded-lg border font-medium shadow-sm cursor-grab active:cursor-grabbing ${
+                                                        darkMode 
+                                                            ? 'bg-blue-900/50 border-blue-700 text-blue-300' 
+                                                            : 'bg-blue-50 border-blue-100 text-blue-900'
+                                                    }`}
                                                 >
                                                     {pair.left}
                                                 </div>
                                             ))}
                                         </div>
                                         <div className="space-y-3">
-                                            <p className="text-xs uppercase tracking-wide text-gray-400">Drop onto the matches</p>
+                                            <p className={`text-xs uppercase tracking-wide ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Drop onto the matches</p>
                                             {rightOptions.map((rightOption, rightIndex) => {
                                                 const matchedLeftIndex = matches[rightIndex];
                                                 const matchedLeft = matchedLeftIndex !== undefined
@@ -831,17 +933,21 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                             handleDropMatch(index, rightIndex, leftIndex);
                                                         }}
                                                         className={`p-3 rounded-lg border-2 border-dashed flex items-center justify-between gap-3 min-h-[56px] ${matchedLeft
-                                                            ? 'border-blue-300 bg-blue-50'
-                                                            : 'border-gray-200 bg-gray-50'
+                                                            ? darkMode ? 'border-blue-600 bg-blue-900/30' : 'border-blue-300 bg-blue-50'
+                                                            : darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'
                                                             }`}
                                                     >
-                                                        <span className="text-gray-800 font-medium">{rightOption}</span>
-                                                        <span className="text-sm text-gray-500">←</span>
-                                                        <span className={`text-sm font-semibold ${matchedLeft ? 'text-blue-700' : 'text-gray-400'}`}>
+                                                        <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{rightOption}</span>
+                                                        <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>←</span>
+                                                        <span className={`text-sm font-semibold ${matchedLeft 
+                                                            ? darkMode ? 'text-blue-400' : 'text-blue-700' 
+                                                            : darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                                                             {matchedLeft || 'Drop here'}
                                                         </span>
                                                         {showResults && matchedLeft && (
-                                                            <span className={`text-xs font-bold ${isCorrect ? 'text-green-600' : 'text-red-500'}`}>
+                                                            <span className={`text-xs font-bold ${isCorrect 
+                                                                ? darkMode ? 'text-green-400' : 'text-green-600' 
+                                                                : darkMode ? 'text-red-400' : 'text-red-500'}`}>
                                                                 {isCorrect ? 'Correct' : 'Try again'}
                                                             </span>
                                                         )}
@@ -861,30 +967,30 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                         </button>
                                         <button
                                             onClick={() => resetMatching(index)}
-                                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                                            className={`px-4 py-2 font-medium ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}
                                         >
                                             Reset Matches
                                         </button>
                                     </div>
-                                    <p className="mt-4 text-sm text-gray-600"><span className="font-bold">Explanation:</span> {exercise.explanation}</p>
+                                    <p className={`mt-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}><span className="font-bold">Explanation:</span> {exercise.explanation}</p>
                                 </div>
                             );
                         })
                     ) : (
-                        <div className="bg-white rounded-2xl shadow-sm border border-dashed border-gray-300 p-10 text-center text-gray-500">
+                        <div className={`${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} rounded-2xl shadow-sm border border-dashed p-10 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                             No matching exercises yet. Add one below to start practicing.
                         </div>
                     )}
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a matching exercise</h3>
+                    <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-sm border p-6`}>
+                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Add a matching exercise</h3>
                         <div className="space-y-4">
                             <input
                                 type="text"
                                 value={newMatching.prompt}
                                 onChange={(event) => setNewMatching((prev) => ({ ...prev, prompt: event.target.value }))}
                                 placeholder="Prompt (e.g., Match the terms)"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <input
@@ -892,21 +998,21 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                     value={newMatching.left}
                                     onChange={(event) => setNewMatching((prev) => ({ ...prev, left: event.target.value }))}
                                     placeholder="Left item"
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                                 />
                                 <input
                                     type="text"
                                     value={newMatching.right}
                                     onChange={(event) => setNewMatching((prev) => ({ ...prev, right: event.target.value }))}
                                     placeholder="Right item"
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                                 />
                             </div>
                             <textarea
                                 value={newMatching.explanation}
                                 onChange={(event) => setNewMatching((prev) => ({ ...prev, explanation: event.target.value }))}
                                 placeholder="Explanation"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <button
                                 onClick={handleAddMatching}
