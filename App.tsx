@@ -6,6 +6,7 @@ import { VideoSelector } from './components/VideoSelector';
 import { JsonViewer } from './components/JsonViewer';
 import { StudyMode } from './components/StudyMode';
 import { ExamInfo } from './components/ExamInfo';
+import { MockExam } from './components/MockExam';
 import { generateVideoStudyData, getVideosForPlaylist } from './services/geminiService';
 
 const App: React.FC = () => {
@@ -18,6 +19,7 @@ const App: React.FC = () => {
   });
   const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey);
   const [showExamInfo, setShowExamInfo] = useState(false);
+  const [showMockExam, setShowMockExam] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
@@ -123,6 +125,12 @@ const App: React.FC = () => {
                 </span>
               )}
               <button
+                onClick={() => setShowMockExam(true)}
+                className="text-sm bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-1"
+              >
+                🏆 Mock Exam
+              </button>
+              <button
                 onClick={() => setShowExamInfo(true)}
                 className="text-sm text-gray-600 hover:text-blue-600 font-medium transition-colors flex items-center gap-1"
               >
@@ -138,6 +146,13 @@ const App: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      {/* Mock Exam Mode */}
+      {showMockExam && (
+        <div className="fixed inset-0 bg-gray-50 z-40 overflow-auto">
+          <MockExam onExit={() => setShowMockExam(false)} />
+        </div>
+      )}
 
       {/* Exam Info Modal */}
       {showExamInfo && (
@@ -284,7 +299,7 @@ const App: React.FC = () => {
               </p>
               
               {/* Quick Stats */}
-              <div className="flex flex-wrap justify-center gap-4 mb-8">
+              <div className="flex flex-wrap justify-center gap-4 mb-6">
                 <div className="bg-white px-6 py-3 rounded-full shadow-sm border border-gray-200 flex items-center gap-2">
                   <span className="text-2xl">📝</span>
                   <span className="text-gray-700"><strong>{INBDE_INFO.format.totalQuestions}</strong> Questions</span>
@@ -303,6 +318,20 @@ const App: React.FC = () => {
                 >
                   <span>📋</span>
                   <span className="font-semibold">View Full Exam Details</span>
+                </button>
+              </div>
+
+              {/* Mock Exam CTA */}
+              <div className="flex justify-center mb-8">
+                <button
+                  onClick={() => setShowMockExam(true)}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-4 rounded-xl shadow-lg flex items-center gap-3 hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105"
+                >
+                  <span className="text-2xl">🏆</span>
+                  <div className="text-left">
+                    <span className="font-bold text-lg block">Take Mock Exam</span>
+                    <span className="text-sm opacity-90">Timed practice with real-world questions</span>
+                  </div>
                 </button>
               </div>
             </div>
