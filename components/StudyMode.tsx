@@ -5,12 +5,46 @@ interface StudyModeProps {
     data: StudyData;
     onExit: () => void;
     onUpdateData: (data: StudyData) => void;
+    darkMode?: boolean;
 }
+
+// Constants for keyword extraction
+const MIN_WORD_LENGTH = 3;
+const MAX_IMAGE_KEYWORDS = 5;
+const MAX_RADIOPAEDIA_KEYWORDS = 4;
+
+// Helper function to generate search URL for clinical images
+const getImageSearchUrl = (scenario: string): string => {
+    // Extract key terms from the scenario for image search
+    const keywords = scenario
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(' ')
+        .filter(word => word.length > MIN_WORD_LENGTH)
+        .slice(0, MAX_IMAGE_KEYWORDS)
+        .join(' ');
+    
+    // Add dental/medical context
+    const searchTerms = `${keywords} dental radiograph xray clinical`;
+    return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(searchTerms)}`;
+};
+
+// Helper function to get Radiopaedia search URL for radiograph references
+const getRadiopaediaUrl = (scenario: string): string => {
+    const keywords = scenario
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(' ')
+        .filter(word => word.length > MIN_WORD_LENGTH)
+        .slice(0, MAX_RADIOPAEDIA_KEYWORDS)
+        .join('+');
+    return `https://radiopaedia.org/search?q=${keywords}&scope=all`;
+};
 
 // Extend study modes to support new question types introduced in version 2.0.0
 type Mode = 'flashcards' | 'quiz' | 'fillInTheBlank' | 'matching' | 'clinical';
 
-export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData }) => {
+export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData, darkMode = false }) => {
     const [mode, setMode] = useState<Mode>('flashcards');
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
@@ -208,30 +242,30 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
     const hasMatching = (data.matching?.length ?? 0) > 0;
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
+        <div className={`max-w-4xl mx-auto p-6 ${darkMode ? 'text-gray-100' : ''}`}>
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{data.videoTitle}</h2>
-                    <p className="text-gray-500 text-sm">{data.playlistTitle}</p>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{data.videoTitle}</h2>
+                    <p className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm`}>{data.playlistTitle}</p>
                 </div>
                 <button
                     onClick={onExit}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                    className={`px-4 py-2 ${darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-600 hover:text-gray-900'} font-medium`}
                 >
                     Exit Study Mode
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex flex-wrap gap-4 mb-8 border-b border-gray-200" role="tablist">
+            <div className={`flex flex-wrap gap-4 mb-8 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} role="tablist">
                 <button
                     onClick={() => setMode('flashcards')}
                     role="tab"
                     aria-selected={mode === 'flashcards'}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'flashcards'
                         ? 'text-blue-600 border-b-2 border-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Flashcards ({data.flashcards.length})
@@ -242,7 +276,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                     aria-selected={mode === 'quiz'}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'quiz'
                         ? 'text-blue-600 border-b-2 border-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Quiz ({data.multipleChoice.length})
@@ -253,7 +287,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                     aria-selected={mode === 'fillInTheBlank'}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'fillInTheBlank'
                         ? 'text-blue-600 border-b-2 border-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Fill-in-the-Blank ({data.fillInTheBlank?.length || 0})
@@ -264,7 +298,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                     aria-selected={mode === 'matching'}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'matching'
                         ? 'text-blue-600 border-b-2 border-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Matching ({data.matching?.length || 0})
@@ -275,7 +309,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                     aria-selected={mode === 'clinical'}
                     className={`pb-4 px-4 font-medium transition-colors ${mode === 'clinical'
                         ? 'text-blue-600 border-b-2 border-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Clinical ({data.clinical?.length || 0})
@@ -301,26 +335,26 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                 >
                                     {/* Front */}
                                     <div
-                                        className="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-transparent group-hover:border-blue-100 transition-colors"
+                                        className={`absolute inset-0 w-full h-full ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-transparent group-hover:border-blue-100 transition-colors`}
                                         style={{ backfaceVisibility: 'hidden' }}
                                     >
-                                        <span className="text-sm text-gray-400 uppercase tracking-wider mb-4">Question</span>
-                                        <p className="text-2xl text-center font-medium text-gray-800">
+                                        <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider mb-4`}>Question</span>
+                                        <p className={`text-2xl text-center font-medium ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                                             {data.flashcards[currentCardIndex]?.front}
                                         </p>
-                                        <p className="absolute bottom-6 text-sm text-gray-400">Click to flip</p>
+                                        <p className={`absolute bottom-6 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Click to flip</p>
                                     </div>
 
                                     {/* Back */}
                                     <div
-                                        className="absolute inset-0 w-full h-full bg-blue-50 rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-blue-100"
+                                        className={`absolute inset-0 w-full h-full ${darkMode ? 'bg-blue-900' : 'bg-blue-50'} rounded-2xl shadow-xl p-8 flex flex-col items-center justify-center border-2 border-blue-100`}
                                         style={{
                                             backfaceVisibility: 'hidden',
                                             transform: 'rotateY(180deg)'
                                         }}
                                     >
-                                        <span className="text-sm text-blue-400 uppercase tracking-wider mb-4">Answer</span>
-                                        <p className="text-xl text-center text-gray-800 leading-relaxed">
+                                        <span className={`text-sm ${darkMode ? 'text-blue-300' : 'text-blue-400'} uppercase tracking-wider mb-4`}>Answer</span>
+                                        <p className={`text-xl text-center ${darkMode ? 'text-gray-100' : 'text-gray-800'} leading-relaxed`}>
                                             {data.flashcards[currentCardIndex]?.back}
                                         </p>
                                     </div>
@@ -330,42 +364,42 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                             <div className="flex items-center gap-6 mt-8">
                                 <button
                                     onClick={handlePrevCard}
-                                    className="p-3 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                                    className={`p-3 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} transition-colors`}
                                 >
                                     ← Previous
                                 </button>
-                                <span className="text-gray-500 font-medium">
+                                <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} font-medium`}>
                                     {currentCardIndex + 1} / {data.flashcards.length}
                                 </span>
                                 <button
                                     onClick={handleNextCard}
-                                    className="p-3 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+                                    className={`p-3 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} transition-colors`}
                                 >
                                     Next →
                                 </button>
                             </div>
                         </>
                     ) : (
-                        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-sm border border-dashed border-gray-300 p-10 text-center text-gray-500">
+                        <div className={`w-full max-w-2xl ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} rounded-2xl shadow-sm border border-dashed p-10 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                             No flashcards yet. Add your first card below to start studying.
                         </div>
                     )}
 
-                    <div className="w-full max-w-2xl mt-10 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a flashcard</h3>
+                    <div className={`w-full max-w-2xl mt-10 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-sm border p-6`}>
+                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Add a flashcard</h3>
                         <div className="space-y-4">
                             <input
                                 type="text"
                                 value={newFlashcard.front}
                                 onChange={(event) => setNewFlashcard((prev) => ({ ...prev, front: event.target.value }))}
                                 placeholder="Front (question)"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <textarea
                                 value={newFlashcard.back}
                                 onChange={(event) => setNewFlashcard((prev) => ({ ...prev, back: event.target.value }))}
                                 placeholder="Back (answer)"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <button
                                 onClick={handleAddFlashcard}
@@ -804,12 +838,57 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
             {/* Clinical Scenario View */}
             {mode === 'clinical' && (
                 <div className="max-w-3xl mx-auto space-y-8">
-                    {data.clinical?.map((item, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <div className="mb-4">
-                                <span className="font-bold text-gray-700">{index + 1}.</span>{' '}
-                                <span className="text-gray-900 font-medium">{item.scenario}</span>
+                    {/* Info Banner about Images */}
+                    <div className={`p-4 rounded-xl ${darkMode ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-200'} border`}>
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl">🔬</span>
+                            <div>
+                                <h4 className={`font-semibold ${darkMode ? 'text-blue-300' : 'text-blue-800'} mb-1`}>Clinical Images & Radiographs</h4>
+                                <p className={`text-sm ${darkMode ? 'text-blue-200' : 'text-blue-700'}`}>
+                                    Each clinical scenario includes links to search for relevant radiographs, X-rays, and clinical images to help you visualize the condition and arrive at a diagnosis.
+                                </p>
                             </div>
+                        </div>
+                    </div>
+
+                    {data.clinical?.map((item, index) => (
+                        <div key={index} className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border p-6`}>
+                            <div className="mb-4">
+                                <span className={`font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{index + 1}.</span>{' '}
+                                <span className={`${darkMode ? 'text-gray-100' : 'text-gray-900'} font-medium`}>{item.scenario}</span>
+                            </div>
+                            
+                            {/* Image Search Links */}
+                            <div className={`mb-4 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                                <p className={`text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-3 flex items-center gap-2`}>
+                                    <span>📷</span> Related Images & Radiographs:
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    <a
+                                        href={getImageSearchUrl(item.scenario)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'bg-purple-900 text-purple-300 hover:bg-purple-800' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
+                                    >
+                                        🔍 Search Clinical Images
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                    <a
+                                        href={getRadiopaediaUrl(item.scenario)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'bg-green-900 text-green-300 hover:bg-green-800' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                                    >
+                                        📚 Radiopaedia Reference
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+
                             <button
                                 onClick={() => setRevealedClinical(prev => ({ ...prev, [index]: !prev[index] }))}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
@@ -817,7 +896,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                 {revealedClinical[index] ? 'Hide Answer' : 'Reveal Answer'}
                             </button>
                             {revealedClinical[index] && (
-                                <div className="mt-4 space-y-2 text-gray-700">
+                                <div className={`mt-4 space-y-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <p><span className="font-bold">Answer:</span> {item.answer}</p>
                                     <p><span className="font-bold">Explanation:</span> {item.explanation}</p>
                                 </div>
@@ -825,28 +904,28 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                         </div>
                     ))}
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a clinical scenario</h3>
+                    <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-sm border p-6`}>
+                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Add a clinical scenario</h3>
                         <div className="space-y-4">
                             <input
                                 type="text"
                                 value={newClinical.scenario}
                                 onChange={(event) => setNewClinical((prev) => ({ ...prev, scenario: event.target.value }))}
                                 placeholder="Scenario"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <input
                                 type="text"
                                 value={newClinical.answer}
                                 onChange={(event) => setNewClinical((prev) => ({ ...prev, answer: event.target.value }))}
                                 placeholder="Answer"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <textarea
                                 value={newClinical.explanation}
                                 onChange={(event) => setNewClinical((prev) => ({ ...prev, explanation: event.target.value }))}
                                 placeholder="Explanation"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300'}`}
                             />
                             <button
                                 onClick={handleAddClinical}

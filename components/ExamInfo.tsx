@@ -11,11 +11,12 @@ import {
 
 interface ExamInfoProps {
   onClose: () => void;
+  darkMode?: boolean;
 }
 
 type TabType = 'overview' | 'domains' | 'schedule' | 'highyield' | 'resources' | 'tips';
 
-export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
+export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose, darkMode = false }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
   const [expandedSubject, setExpandedSubject] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
       aria-modal="true"
       aria-labelledby="exam-info-title"
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col`}>
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
           <div className="flex justify-between items-start">
@@ -57,7 +58,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 bg-gray-50" role="tablist" aria-label="Exam information tabs">
+        <div className={`border-b ${darkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'}`} role="tablist" aria-label="Exam information tabs">
           <div className="flex overflow-x-auto">
             {tabs.map((tab) => (
               <button
@@ -68,8 +69,8 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
                 aria-controls={`tabpanel-${tab.id}`}
                 className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    ? `text-blue-600 border-b-2 border-blue-600 ${darkMode ? 'bg-gray-800' : 'bg-white'}`
+                    : `${darkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-600' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`
                 }`}
               >
                 <span>{tab.icon}</span>

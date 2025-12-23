@@ -7,6 +7,18 @@ body {
   background-color: #f3f4f6;
 }
 
+/* Dark mode body styles */
+.dark body,
+body.dark {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+/* Dark mode styles */
+.dark {
+  color-scheme: dark;
+}
+
 /* Custom scrollbar for code blocks */
 ::-webkit-scrollbar {
   width: 8px;

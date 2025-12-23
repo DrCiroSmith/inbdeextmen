@@ -3,6 +3,7 @@ import { MOCK_EXAM_QUESTIONS, MockExamQuestion } from '../mockExamQuestions';
 
 interface MockExamProps {
     onExit: () => void;
+    darkMode?: boolean;
 }
 
 type ExamMode = 'setup' | 'in-progress' | 'review' | 'results';
@@ -20,7 +21,7 @@ interface ExamSession {
 const SECONDS_PER_SESSION = 65 * 60;
 const QUESTIONS_PER_SESSION = 62;
 
-export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
+export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) => {
     const [mode, setMode] = useState<ExamMode>('setup');
     const [examType, setExamType] = useState<ExamType>('partial');
     const [customQuestionCount, setCustomQuestionCount] = useState(50);
@@ -223,63 +224,71 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
     if (mode === 'setup') {
         return (
             <div className="max-w-4xl mx-auto p-6">
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-lg p-8`}>
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">🏆 INBDE Mock Exam</h1>
-                        <p className="text-gray-600">Simulate the real INBDE experience with timed sessions and real-world style questions</p>
+                        <h1 className={`text-3xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2`}>🏆 INBDE Mock Exam</h1>
+                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Simulate the real INBDE experience with timed sessions and real-world style questions</p>
                     </div>
 
                     <div className="mb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Exam Type</h3>
+                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Select Exam Type</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button
                                 onClick={() => setExamType('full')}
                                 className={`p-6 rounded-xl border-2 text-left transition-all ${
-                                    examType === 'full' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                    examType === 'full' 
+                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                                        : darkMode 
+                                            ? 'border-gray-700 hover:border-gray-600' 
+                                            : 'border-gray-200 hover:border-gray-300'
                                 }`}
                             >
                                 <div className="flex items-center gap-3 mb-2">
                                     <span className="text-2xl">📋</span>
-                                    <h4 className="font-bold text-gray-900">Full INBDE Simulation</h4>
+                                    <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Full INBDE Simulation</h4>
                                 </div>
-                                <p className="text-sm text-gray-600 mb-3">
+                                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
                                     Complete 8 sessions with 62 questions each (496 total), timed at 65 minutes per session.
                                 </p>
                                 <div className="flex flex-wrap gap-2 text-xs">
-                                    <span className="bg-gray-100 px-2 py-1 rounded">8 Sessions</span>
-                                    <span className="bg-gray-100 px-2 py-1 rounded">496 Questions</span>
-                                    <span className="bg-gray-100 px-2 py-1 rounded">~8.5 hours total</span>
+                                    <span className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} px-2 py-1 rounded`}>8 Sessions</span>
+                                    <span className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} px-2 py-1 rounded`}>496 Questions</span>
+                                    <span className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} px-2 py-1 rounded`}>~8.5 hours total</span>
                                 </div>
                             </button>
                             
                             <button
                                 onClick={() => setExamType('partial')}
                                 className={`p-6 rounded-xl border-2 text-left transition-all ${
-                                    examType === 'partial' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                    examType === 'partial' 
+                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                                        : darkMode 
+                                            ? 'border-gray-700 hover:border-gray-600' 
+                                            : 'border-gray-200 hover:border-gray-300'
                                 }`}
                             >
                                 <div className="flex items-center gap-3 mb-2">
                                     <span className="text-2xl">⚡</span>
-                                    <h4 className="font-bold text-gray-900">Custom Practice Exam</h4>
+                                    <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Custom Practice Exam</h4>
                                 </div>
-                                <p className="text-sm text-gray-600 mb-3">
+                                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
                                     Choose your own question count and optionally filter by subject areas.
                                 </p>
                                 <div className="flex flex-wrap gap-2 text-xs">
-                                    <span className="bg-gray-100 px-2 py-1 rounded">Flexible Length</span>
-                                    <span className="bg-gray-100 px-2 py-1 rounded">Subject Selection</span>
-                                    <span className="bg-gray-100 px-2 py-1 rounded">Timed Sessions</span>
+                                    <span className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} px-2 py-1 rounded`}>Flexible Length</span>
+                                    <span className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} px-2 py-1 rounded`}>Subject Selection</span>
+                                    <span className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} px-2 py-1 rounded`}>Timed Sessions</span>
                                 </div>
                             </button>
                         </div>
                     </div>
 
                     {examType === 'partial' && (
-                        <div className="mb-8 p-6 bg-gray-50 rounded-xl">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Customize Your Exam</h3>
+                        <div className={`mb-8 p-6 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl`}>
+                            <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Customize Your Exam</h3>
                             
                             <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                                     Number of Questions: {customQuestionCount}
                                 </label>
                                 <input
@@ -293,7 +302,7 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                                     Filter by Subject (optional)
                                 </label>
                                 <div className="flex flex-wrap gap-2">
@@ -310,7 +319,9 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                                             className={`px-3 py-1 rounded-full text-sm transition-colors ${
                                                 selectedSubjects.includes(subject)
                                                     ? 'bg-blue-600 text-white'
-                                                    : 'bg-white border border-gray-300 text-gray-700 hover:border-blue-500'
+                                                    : darkMode 
+                                                        ? 'bg-gray-600 border border-gray-500 text-gray-300 hover:border-blue-500'
+                                                        : 'bg-white border border-gray-300 text-gray-700 hover:border-blue-500'
                                             }`}
                                         >
                                             {subject}
@@ -321,9 +332,9 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                         </div>
                     )}
 
-                    <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <h4 className="font-semibold text-yellow-800 mb-2">📝 Exam Rules</h4>
-                        <ul className="text-sm text-yellow-700 space-y-1">
+                    <div className={`mb-8 p-4 ${darkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg`}>
+                        <h4 className={`font-semibold ${darkMode ? 'text-yellow-300' : 'text-yellow-800'} mb-2`}>📝 Exam Rules</h4>
+                        <ul className={`text-sm ${darkMode ? 'text-yellow-200' : 'text-yellow-700'} space-y-1`}>
                             <li>• Each session is timed at 65 minutes (like the real INBDE)</li>
                             <li>• You can flag questions to review later within the session</li>
                             <li>• Once a session ends, you cannot go back to previous sessions</li>
@@ -332,7 +343,7 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                     </div>
 
                     <div className="flex gap-4">
-                        <button onClick={onExit} className="px-6 py-3 text-gray-600 font-semibold hover:text-gray-800">
+                        <button onClick={onExit} className={`px-6 py-3 ${darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-600 hover:text-gray-800'} font-semibold`}>
                             ← Back to Home
                         </button>
                         <button
@@ -353,28 +364,30 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
         const timeWarning = currentSession.timeRemaining < 300;
 
         return (
-            <div className="min-h-screen bg-gray-100">
-                <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b sticky top-0 z-50`}>
                     <div className="max-w-7xl mx-auto px-4 py-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <span className="font-bold text-gray-900">
+                                <span className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                     Session {currentSession.sessionNumber} of {sessions.length}
                                 </span>
-                                <span className="text-sm text-gray-500">
+                                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                     Question {currentQuestionIndex + 1} of {currentSession.questions.length}
                                 </span>
                             </div>
                             
                             <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-mono text-lg ${
-                                timeWarning ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                                timeWarning 
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400' 
+                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400'
                             }`}>
                                 <span>⏱️</span>
                                 <span className="font-bold">{formatTime(currentSession.timeRemaining)}</span>
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-500">{answeredCount}/{currentSession.questions.length} answered</span>
+                                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{answeredCount}/{currentSession.questions.length} answered</span>
                                 {flaggedCount > 0 && <span className="text-sm text-orange-600">🚩 {flaggedCount} flagged</span>}
                                 <button
                                     onClick={() => {
@@ -393,8 +406,8 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
 
                 <div className="max-w-6xl mx-auto px-4 py-6 flex gap-6">
                     <div className="w-64 flex-shrink-0">
-                        <div className="bg-white rounded-xl shadow-sm p-4 sticky top-24">
-                            <h3 className="font-semibold text-gray-900 mb-3">Question Navigator</h3>
+                        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-4 sticky top-24`}>
+                            <h3 className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-3`}>Question Navigator</h3>
                             <div className="grid grid-cols-5 gap-2">
                                 {currentSession.questions.map((_, index) => {
                                     const isAnswered = currentSession.answers[index] !== undefined;
@@ -407,8 +420,9 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                                             onClick={() => goToQuestion(index)}
                                             className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors relative ${
                                                 isCurrent ? 'bg-blue-600 text-white'
-                                                    : isAnswered ? 'bg-green-100 text-green-700'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    : isAnswered 
+                                                        ? darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700'
+                                                        : darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                             }`}
                                         >
                                             {index + 1}
@@ -421,17 +435,17 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                     </div>
 
                     <div className="flex-1">
-                        <div className="bg-white rounded-xl shadow-sm p-6">
+                        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-6`}>
                             <div className="flex items-center justify-between mb-4">
-                                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                <span className={`px-3 py-1 ${darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-700'} rounded-full text-sm font-medium`}>
                                     {currentQuestion.subject}
                                 </span>
                                 <button
                                     onClick={toggleFlag}
                                     className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm transition-colors ${
                                         currentSession.flagged.has(currentQuestionIndex)
-                                            ? 'bg-orange-100 text-orange-700'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-400'
+                                            : darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                                 >
                                     🚩 {currentSession.flagged.has(currentQuestionIndex) ? 'Flagged' : 'Flag'}
@@ -439,7 +453,7 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                             </div>
 
                             <div className="mb-6">
-                                <h2 className="text-lg font-medium text-gray-900 leading-relaxed">{currentQuestion.question}</h2>
+                                <h2 className={`text-lg font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'} leading-relaxed`}>{currentQuestion.question}</h2>
                             </div>
 
                             <div className="space-y-3">
@@ -452,11 +466,15 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                                             key={index}
                                             onClick={() => handleAnswerSelect(option)}
                                             className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                                                isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                isSelected 
+                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                                                    : darkMode 
+                                                        ? 'border-gray-700 hover:border-gray-600 hover:bg-gray-700' 
+                                                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                                             }`}
                                         >
-                                            <span className="font-semibold text-gray-500 mr-3">{letter}.</span>
-                                            <span className="text-gray-800">{option}</span>
+                                            <span className={`font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'} mr-3`}>{letter}.</span>
+                                            <span className={darkMode ? 'text-gray-200' : 'text-gray-800'}>{option}</span>
                                         </button>
                                     );
                                 })}
@@ -466,7 +484,7 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                                 <button
                                     onClick={prevQuestion}
                                     disabled={currentQuestionIndex === 0}
-                                    className="px-6 py-3 text-gray-600 font-semibold hover:text-gray-800 disabled:opacity-50"
+                                    className={`px-6 py-3 ${darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-600 hover:text-gray-800'} font-semibold disabled:opacity-50`}
                                 >
                                     ← Previous
                                 </button>
@@ -491,34 +509,42 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
 
         return (
             <div className="max-w-4xl mx-auto p-6">
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-lg p-8`}>
                     <div className="text-center mb-8">
-                        <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 ${passed ? 'bg-green-100' : 'bg-red-100'}`}>
+                        <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 ${passed ? (darkMode ? 'bg-green-900' : 'bg-green-100') : (darkMode ? 'bg-red-900' : 'bg-red-100')}`}>
                             <span className="text-5xl">{passed ? '🎉' : '📚'}</span>
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{passed ? 'Congratulations!' : 'Keep Studying!'}</h1>
-                        <p className="text-gray-600">
+                        <h1 className={`text-3xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2`}>{passed ? 'Congratulations!' : 'Keep Studying!'}</h1>
+                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
                             {passed ? 'You achieved a passing score!' : 'You need 75% to pass. Review the questions below.'}
                         </p>
                     </div>
 
+                    {/* Score Display - Enhanced with percentage prominently displayed */}
                     <div className="grid grid-cols-3 gap-4 mb-8">
-                        <div className="bg-gray-50 rounded-xl p-6 text-center">
-                            <div className="text-4xl font-bold text-blue-600 mb-1">{results.percentage}%</div>
-                            <div className="text-sm text-gray-500">Overall Score</div>
+                        <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl p-6 text-center`}>
+                            <div className={`text-5xl font-bold ${passed ? 'text-green-500' : 'text-red-500'} mb-1`}>{results.percentage}%</div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Score Percentage</div>
                         </div>
-                        <div className="bg-gray-50 rounded-xl p-6 text-center">
+                        <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl p-6 text-center`}>
                             <div className="text-4xl font-bold text-green-600 mb-1">{results.totalCorrect}</div>
-                            <div className="text-sm text-gray-500">Correct Answers</div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Correct Answers</div>
                         </div>
-                        <div className="bg-gray-50 rounded-xl p-6 text-center">
-                            <div className="text-4xl font-bold text-gray-600 mb-1">{results.totalQuestions}</div>
-                            <div className="text-sm text-gray-500">Total Questions</div>
+                        <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl p-6 text-center`}>
+                            <div className={`text-4xl font-bold ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-1`}>{results.totalQuestions}</div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Questions</div>
                         </div>
                     </div>
 
+                    {/* Pass/Fail Banner */}
+                    <div className={`mb-8 p-4 rounded-xl text-center ${passed ? (darkMode ? 'bg-green-900/50 border-green-700' : 'bg-green-50 border-green-200') : (darkMode ? 'bg-red-900/50 border-red-700' : 'bg-red-50 border-red-200')} border`}>
+                        <p className={`text-lg font-semibold ${passed ? (darkMode ? 'text-green-300' : 'text-green-700') : (darkMode ? 'text-red-300' : 'text-red-700')}`}>
+                            {passed ? '✓ PASS - You scored above 75%!' : '✗ Below Passing - 75% required to pass'}
+                        </p>
+                    </div>
+
                     <div className="mb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance by Subject</h3>
+                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-4`}>Performance by Subject</h3>
                         <div className="space-y-3">
                             {Object.entries(results.subjectResults)
                                 .sort((a, b) => (b[1].correct / b[1].total) - (a[1].correct / a[1].total))
@@ -526,14 +552,14 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                                     const pct = Math.round((data.correct / data.total) * 100);
                                     return (
                                         <div key={subject} className="flex items-center gap-4">
-                                            <div className="w-40 text-sm font-medium text-gray-700 truncate">{subject}</div>
-                                            <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                                            <div className={`w-40 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} truncate`}>{subject}</div>
+                                            <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-3 overflow-hidden`}>
                                                 <div 
                                                     className={`h-full rounded-full ${pct >= 75 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
                                                     style={{ width: `${pct}%` }}
                                                 />
                                             </div>
-                                            <div className="w-20 text-sm text-gray-600 text-right">{data.correct}/{data.total} ({pct}%)</div>
+                                            <div className={`w-24 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} text-right`}>{data.correct}/{data.total} ({pct}%)</div>
                                         </div>
                                     );
                                 })}
@@ -557,11 +583,11 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                                 setCurrentQuestionIndex(0);
                                 setMode('setup');
                             }}
-                            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50"
+                            className={`flex-1 px-6 py-3 border ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-xl font-semibold`}
                         >
                             Take Another Exam
                         </button>
-                        <button onClick={onExit} className="flex-1 px-6 py-3 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-900">
+                        <button onClick={onExit} className={`flex-1 px-6 py-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-800 hover:bg-gray-900'} text-white rounded-xl font-semibold`}>
                             Back to Home
                         </button>
                     </div>
@@ -574,7 +600,7 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
         return (
             <div className="max-w-4xl mx-auto p-6">
                 <div className="mb-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900">📖 Question Review</h1>
+                    <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>📖 Question Review</h1>
                     <button onClick={() => setMode('results')} className="px-4 py-2 text-blue-600 font-semibold hover:underline">
                         ← Back to Results
                     </button>
@@ -583,22 +609,22 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                 <div className="space-y-6">
                     {sessions.map((session, sessionIdx) => (
                         <div key={sessionIdx}>
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b">Session {session.sessionNumber}</h2>
+                            <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} mb-4 pb-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>Session {session.sessionNumber}</h2>
                             {session.questions.map((question, qIdx) => {
                                 const userAnswer = session.answers[qIdx];
                                 const isCorrect = userAnswer === question.correctAnswer;
 
                                 return (
-                                    <div key={qIdx} className={`mb-4 p-6 rounded-xl border-2 ${isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+                                    <div key={qIdx} className={`mb-4 p-6 rounded-xl border-2 ${isCorrect ? (darkMode ? 'border-green-800 bg-green-900/30' : 'border-green-200 bg-green-50') : (darkMode ? 'border-red-800 bg-red-900/30' : 'border-red-200 bg-red-50')}`}>
                                         <div className="flex items-start gap-3 mb-3">
                                             <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
                                                 {isCorrect ? '✓' : '✗'}
                                             </span>
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">{question.subject}</span>
+                                                    <span className={`px-2 py-0.5 ${darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-700'} rounded text-xs font-medium`}>{question.subject}</span>
                                                 </div>
-                                                <p className="text-gray-900 font-medium">{question.question}</p>
+                                                <p className={`${darkMode ? 'text-gray-100' : 'text-gray-900'} font-medium`}>{question.question}</p>
                                             </div>
                                         </div>
 
@@ -610,22 +636,24 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
 
                                                 return (
                                                     <div key={optIdx} className={`p-3 rounded-lg ${
-                                                        isCorrectAnswer ? 'bg-green-100 border-2 border-green-500'
-                                                            : isUserAnswer ? 'bg-red-100 border-2 border-red-500'
-                                                            : 'bg-white border border-gray-200'
+                                                        isCorrectAnswer 
+                                                            ? darkMode ? 'bg-green-900/50 border-2 border-green-500' : 'bg-green-100 border-2 border-green-500'
+                                                            : isUserAnswer 
+                                                                ? darkMode ? 'bg-red-900/50 border-2 border-red-500' : 'bg-red-100 border-2 border-red-500'
+                                                                : darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
                                                     }`}>
-                                                        <span className="font-semibold text-gray-500 mr-2">{letter}.</span>
-                                                        <span className={isCorrectAnswer ? 'text-green-800 font-medium' : 'text-gray-700'}>{option}</span>
-                                                        {isCorrectAnswer && <span className="ml-2 text-green-600 font-medium">(Correct)</span>}
-                                                        {isUserAnswer && !isCorrectAnswer && <span className="ml-2 text-red-600 font-medium">(Your Answer)</span>}
+                                                        <span className={`font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'} mr-2`}>{letter}.</span>
+                                                        <span className={isCorrectAnswer ? (darkMode ? 'text-green-300 font-medium' : 'text-green-800 font-medium') : (darkMode ? 'text-gray-300' : 'text-gray-700')}>{option}</span>
+                                                        {isCorrectAnswer && <span className={`ml-2 ${darkMode ? 'text-green-400' : 'text-green-600'} font-medium`}>(Correct)</span>}
+                                                        {isUserAnswer && !isCorrectAnswer && <span className={`ml-2 ${darkMode ? 'text-red-400' : 'text-red-600'} font-medium`}>(Your Answer)</span>}
                                                     </div>
                                                 );
                                             })}
                                         </div>
 
-                                        <div className="ml-11 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                            <p className="text-sm font-semibold text-blue-800 mb-1">📖 Explanation:</p>
-                                            <p className="text-sm text-blue-700">{question.explanation}</p>
+                                        <div className={`ml-11 p-4 ${darkMode ? 'bg-blue-900/30 border-blue-700' : 'bg-blue-50 border-blue-200'} rounded-lg border`}>
+                                            <p className={`text-sm font-semibold ${darkMode ? 'text-blue-300' : 'text-blue-800'} mb-1`}>📖 Explanation:</p>
+                                            <p className={`text-sm ${darkMode ? 'text-blue-200' : 'text-blue-700'}`}>{question.explanation}</p>
                                         </div>
                                     </div>
                                 );
@@ -638,7 +666,7 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit }) => {
                     <button onClick={() => setMode('results')} className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700">
                         Back to Results
                     </button>
-                    <button onClick={onExit} className="flex-1 px-6 py-3 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-900">
+                    <button onClick={onExit} className={`flex-1 px-6 py-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-800 hover:bg-gray-900'} text-white rounded-xl font-semibold`}>
                         Back to Home
                     </button>
                 </div>
