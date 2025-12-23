@@ -816,8 +816,8 @@ export const STUDY_RESOURCES: ResourceCategory[] = [
         icon: '📖'
       },
       {
-        name: 'Mosby\'s Review for the NBDE',
-        description: 'Comprehensive review book with practice questions and rationales',
+        name: 'Mosby\'s Review for the NBDE/INBDE',
+        description: 'Comprehensive review book with practice questions and rationales, covers content relevant for INBDE',
         url: 'https://www.elsevier.com/books/mosbys-review-for-the-nbde/mosby/978-0-323-22562-1',
         type: 'book',
         isPaid: true,

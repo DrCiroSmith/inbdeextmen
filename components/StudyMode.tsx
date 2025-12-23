@@ -591,8 +591,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                 {showHint && !isChecked && (
                                     <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                         <p className="text-sm text-yellow-800">
-                                            <span className="font-bold">💡 Hint:</span> The answer has {item.answer.length} characters
-                                            {item.answer.length > 0 && ` and starts with "${item.answer[0].toUpperCase()}"`}
+                                            <span className="font-bold">💡 Hint:</span> The answer has {item.answer?.length || 0} characters
+                                            {item.answer && item.answer.length > 0 && ` and starts with "${item.answer[0].toUpperCase()}"`}
                                         </p>
                                     </div>
                                 )}
