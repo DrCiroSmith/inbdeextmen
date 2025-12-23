@@ -8,15 +8,20 @@ interface StudyModeProps {
     darkMode?: boolean;
 }
 
+// Constants for keyword extraction
+const MIN_WORD_LENGTH = 3;
+const MAX_IMAGE_KEYWORDS = 5;
+const MAX_RADIOPAEDIA_KEYWORDS = 4;
+
 // Helper function to generate search URL for clinical images
-const getImageSearchUrl = (scenario: string, playlistTitle: string): string => {
+const getImageSearchUrl = (scenario: string): string => {
     // Extract key terms from the scenario for image search
     const keywords = scenario
         .toLowerCase()
         .replace(/[^\w\s]/g, ' ')
         .split(' ')
-        .filter(word => word.length > 3)
-        .slice(0, 5)
+        .filter(word => word.length > MIN_WORD_LENGTH)
+        .slice(0, MAX_IMAGE_KEYWORDS)
         .join(' ');
     
     // Add dental/medical context
@@ -30,8 +35,8 @@ const getRadiopaediaUrl = (scenario: string): string => {
         .toLowerCase()
         .replace(/[^\w\s]/g, ' ')
         .split(' ')
-        .filter(word => word.length > 3)
-        .slice(0, 4)
+        .filter(word => word.length > MIN_WORD_LENGTH)
+        .slice(0, MAX_RADIOPAEDIA_KEYWORDS)
         .join('+');
     return `https://radiopaedia.org/search?q=${keywords}&scope=all`;
 };
@@ -860,7 +865,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                     <a
-                                        href={getImageSearchUrl(item.scenario, data.playlistTitle)}
+                                        href={getImageSearchUrl(item.scenario)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'bg-purple-900 text-purple-300 hover:bg-purple-800' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
