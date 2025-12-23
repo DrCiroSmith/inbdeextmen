@@ -5,14 +5,15 @@ import {
   PATIENT_CARE_DOMAINS,
   RECOMMENDED_STUDY_SCHEDULE,
   HIGH_YIELD_TOPICS,
-  EXAM_DAY_TIPS
+  EXAM_DAY_TIPS,
+  STUDY_RESOURCES
 } from '../constants';
 
 interface ExamInfoProps {
   onClose: () => void;
 }
 
-type TabType = 'overview' | 'domains' | 'schedule' | 'highyield' | 'tips';
+type TabType = 'overview' | 'domains' | 'schedule' | 'highyield' | 'resources' | 'tips';
 
 export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -24,6 +25,7 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
     { id: 'domains', label: 'Content Domains', icon: '📚' },
     { id: 'schedule', label: 'Study Schedule', icon: '📅' },
     { id: 'highyield', label: 'High-Yield Topics', icon: '⭐' },
+    { id: 'resources', label: 'Study Resources', icon: '📖' },
     { id: 'tips', label: 'Exam Day Tips', icon: '💡' }
   ];
 
@@ -389,6 +391,92 @@ export const ExamInfo: React.FC<ExamInfoProps> = ({ onClose }) => {
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Study Resources Tab */}
+          {activeTab === 'resources' && (
+            <div id="tabpanel-resources" role="tabpanel" aria-labelledby="tab-resources" className="space-y-8">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl p-6">
+                <h3 className="text-xl font-bold mb-2">📖 Study Resources</h3>
+                <p className="text-purple-100">Curated collection of the best INBDE preparation materials</p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                <p className="text-sm text-yellow-800 flex items-start gap-2">
+                  <span className="text-lg">💡</span>
+                  <span>
+                    <strong>Pro Tip:</strong> Combine free resources like Mental Dental videos with a question bank for optimal preparation. 
+                    Most successful candidates use 2-3 complementary resources.
+                  </span>
+                </p>
+              </div>
+
+              {STUDY_RESOURCES.map((category) => (
+                <div key={category.category} className="space-y-4">
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-900">{category.category}</h4>
+                    <p className="text-sm text-gray-500">{category.description}</p>
+                  </div>
+                  
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {category.resources.map((resource) => (
+                      <a
+                        key={resource.name}
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 transition-all group"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl">{resource.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h5 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {resource.name}
+                              </h5>
+                              {resource.isPaid ? (
+                                <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
+                                  Paid
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                                  Free
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{resource.description}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                                resource.type === 'video' ? 'bg-red-100 text-red-700' :
+                                resource.type === 'book' ? 'bg-blue-100 text-blue-700' :
+                                resource.type === 'course' ? 'bg-purple-100 text-purple-700' :
+                                resource.type === 'flashcards' ? 'bg-yellow-100 text-yellow-700' :
+                                resource.type === 'practice' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)}
+                              </span>
+                              <span className="text-blue-500 text-sm group-hover:underline flex items-center gap-1">
+                                Visit →
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Study Materials Disclaimer */}
+              <div className="bg-gray-100 rounded-xl p-4 text-sm text-gray-600">
+                <p>
+                  <strong>Disclaimer:</strong> These resources are provided for informational purposes only. 
+                  This platform is not affiliated with any of the listed resources. Always verify current pricing 
+                  and availability directly with the providers.
+                </p>
               </div>
             </div>
           )}
