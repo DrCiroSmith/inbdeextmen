@@ -153,6 +153,51 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
         })) ?? []
     ));
 
+    // Helper functions for matching exercise styling
+    const getLeftItemClassName = (isSelected: boolean, darkMode: boolean): string => {
+        const baseClasses = 'p-3 rounded-lg border-2 font-medium shadow-sm cursor-pointer transition-all';
+        if (isSelected) {
+            const selectedClasses = 'bg-blue-600 border-blue-500 text-white scale-105 ring-2';
+            const ringColor = darkMode ? 'ring-blue-400' : 'ring-blue-300';
+            return `${baseClasses} ${selectedClasses} ${ringColor}`;
+        }
+        if (darkMode) {
+            return `${baseClasses} bg-blue-900/50 border-blue-700 text-blue-300 hover:bg-blue-900 hover:scale-102`;
+        }
+        return `${baseClasses} bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100 hover:scale-102`;
+    };
+
+    const getRightItemClassName = (hasMatch: boolean, canClick: boolean, darkMode: boolean): string => {
+        const baseClasses = 'p-3 rounded-lg border-2 border-dashed flex items-center justify-between gap-3 min-h-[56px] transition-all';
+        const clickableClass = canClick ? 'cursor-pointer' : '';
+        
+        if (hasMatch) {
+            const matchClasses = darkMode ? 'border-blue-600 bg-blue-900/30' : 'border-blue-300 bg-blue-50';
+            return `${baseClasses} ${clickableClass} ${matchClasses}`;
+        }
+        
+        if (canClick) {
+            const hoverClasses = darkMode 
+                ? 'border-blue-500 bg-gray-700 hover:bg-gray-600' 
+                : 'border-blue-400 bg-gray-50 hover:bg-blue-50';
+            return `${baseClasses} ${clickableClass} ${hoverClasses}`;
+        }
+        
+        const defaultClasses = darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50';
+        return `${baseClasses} ${defaultClasses}`;
+    };
+
+    const getRightItemLabelClassName = (hasMatch: boolean, canClick: boolean, darkMode: boolean): string => {
+        const baseClass = 'text-sm font-semibold';
+        if (hasMatch) {
+            return `${baseClass} ${darkMode ? 'text-blue-400' : 'text-blue-700'}`;
+        }
+        if (canClick) {
+            return `${baseClass} ${darkMode ? 'text-blue-400' : 'text-blue-600'}`;
+        }
+        return `${baseClass} ${darkMode ? 'text-gray-500' : 'text-gray-400'}`;
+    };
+
     // Flashcard Logic
     const handleNextCard = () => {
         if (data.flashcards.length === 0) return;
@@ -958,15 +1003,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                             event.dataTransfer.setData('text/plain', String(leftIndex));
                                                             event.dataTransfer.effectAllowed = 'move';
                                                         }}
-                                                        className={`p-3 rounded-lg border-2 font-medium shadow-sm cursor-pointer transition-all ${
-                                                            isSelected
-                                                                ? darkMode
-                                                                    ? 'bg-blue-600 border-blue-500 text-white scale-105 ring-2 ring-blue-400'
-                                                                    : 'bg-blue-600 border-blue-500 text-white scale-105 ring-2 ring-blue-300'
-                                                                : darkMode 
-                                                                    ? 'bg-blue-900/50 border-blue-700 text-blue-300 hover:bg-blue-900 hover:scale-102' 
-                                                                    : 'bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100 hover:scale-102'
-                                                        }`}
+                                                        className={getLeftItemClassName(isSelected, darkMode)}
                                                     >
                                                         {pair.left}
                                                         {isSelected && <span className="ml-2">✓</span>}
@@ -998,23 +1035,11 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                             if (Number.isNaN(leftIndex)) return;
                                                             handleDropMatch(index, rightIndex, leftIndex);
                                                         }}
-                                                        className={`p-3 rounded-lg border-2 border-dashed flex items-center justify-between gap-3 min-h-[56px] transition-all ${
-                                                            canClick ? 'cursor-pointer' : ''
-                                                        } ${
-                                                            matchedLeft
-                                                                ? darkMode ? 'border-blue-600 bg-blue-900/30' : 'border-blue-300 bg-blue-50'
-                                                                : canClick
-                                                                    ? darkMode ? 'border-blue-500 bg-gray-700 hover:bg-gray-600' : 'border-blue-400 bg-gray-50 hover:bg-blue-50'
-                                                                    : darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'
-                                                        }`}
+                                                        className={getRightItemClassName(!!matchedLeft, canClick, darkMode)}
                                                     >
                                                         <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{rightOption}</span>
                                                         <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>←</span>
-                                                        <span className={`text-sm font-semibold ${matchedLeft 
-                                                            ? darkMode ? 'text-blue-400' : 'text-blue-700' 
-                                                            : canClick
-                                                                ? darkMode ? 'text-blue-400' : 'text-blue-600'
-                                                                : darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                        <span className={getRightItemLabelClassName(!!matchedLeft, canClick, darkMode)}>
                                                             {matchedLeft || (canClick ? 'Tap here' : 'Drop here')}
                                                         </span>
                                                         {showResults && matchedLeft && (
