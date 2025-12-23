@@ -488,13 +488,25 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) 
                                 >
                                     ← Previous
                                 </button>
-                                <button
-                                    onClick={nextQuestion}
-                                    disabled={currentQuestionIndex === currentSession.questions.length - 1}
-                                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
-                                >
-                                    Next →
-                                </button>
+                                {currentQuestionIndex === currentSession.questions.length - 1 ? (
+                                    <button
+                                        onClick={() => {
+                                            if (confirm('Finish this exam session and see your results?')) {
+                                                endSession();
+                                            }
+                                        }}
+                                        className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+                                    >
+                                        🏁 Finish Exam
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={nextQuestion}
+                                        className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+                                    >
+                                        Next →
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

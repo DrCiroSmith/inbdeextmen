@@ -13,31 +13,116 @@ const MIN_WORD_LENGTH = 3;
 const MAX_IMAGE_KEYWORDS = 5;
 const MAX_RADIOPAEDIA_KEYWORDS = 4;
 
+// Common dental/medical terms to prioritize for image search (tags)
+const DENTAL_MEDICAL_TAGS = new Set([
+    // Anatomical locations
+    'tooth', 'teeth', 'molar', 'premolar', 'incisor', 'canine', 'bicuspid',
+    'mandible', 'mandibular', 'maxilla', 'maxillary', 'palate', 'palatal',
+    'gingiva', 'gingival', 'tongue', 'lip', 'lips', 'cheek', 'buccal',
+    'periodontal', 'periapical', 'alveolar', 'pulp', 'pulpal', 'enamel',
+    'dentin', 'cementum', 'root', 'crown', 'apex', 'apical', 'furcation',
+    'anterior', 'posterior', 'mesial', 'distal', 'lingual', 'labial',
+    'occlusal', 'interproximal', 'proximal', 'cervical', 'sublingual',
+    'submandibular', 'parotid', 'salivary', 'tmj', 'condyle', 'ramus',
+    // Conditions and pathology
+    'caries', 'cavity', 'decay', 'abscess', 'infection', 'lesion',
+    'tumor', 'cyst', 'neoplasm', 'cancer', 'carcinoma', 'malignant',
+    'benign', 'ulcer', 'ulceration', 'erosion', 'attrition', 'abrasion',
+    'resorption', 'fracture', 'trauma', 'impaction', 'impacted',
+    'inflammation', 'swelling', 'edema', 'necrosis', 'necrotic',
+    'periodontitis', 'gingivitis', 'recession', 'mobility', 'bone loss',
+    'radiolucent', 'radiopaque', 'calcification', 'calculus', 'tartar',
+    'plaque', 'biofilm', 'fistula', 'sinus tract', 'granuloma',
+    'ameloblastoma', 'odontoma', 'keratocyst', 'dentigerous', 'radicular',
+    'mucocele', 'ranula', 'fibroma', 'papilloma', 'leukoplakia',
+    'erythroplakia', 'lichen planus', 'candidiasis', 'thrush', 'herpes',
+    'cleft', 'palate', 'lip', 'malocclusion', 'crossbite', 'overbite',
+    'overjet', 'spacing', 'crowding', 'diastema', 'supernumerary',
+    'hypodontia', 'hyperdontia', 'fusion', 'gemination', 'dilaceration',
+    // Procedures and treatments
+    'extraction', 'filling', 'restoration', 'crown', 'bridge', 'implant',
+    'denture', 'prosthesis', 'endodontic', 'root canal', 'pulpectomy',
+    'pulpotomy', 'apicoectomy', 'orthodontic', 'scaling', 'prophylaxis',
+    'biopsy', 'surgery', 'surgical', 'grafting', 'bone graft',
+    // Radiograph types
+    'radiograph', 'xray', 'x-ray', 'panoramic', 'bitewing', 'periapical',
+    'cbct', 'ct', 'mri', 'imaging', 'scan',
+    // Descriptive terms
+    'right', 'left', 'bilateral', 'unilateral', 'upper', 'lower',
+    'primary', 'permanent', 'deciduous', 'mixed', 'erupted', 'unerupted'
+]);
+
+// Stopwords to filter out
+const STOPWORDS = new Set([
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+    'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
+    'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+    'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need',
+    'this', 'that', 'these', 'those', 'there', 'here', 'where', 'when',
+    'why', 'how', 'what', 'which', 'who', 'whom', 'whose', 'all', 'each',
+    'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such',
+    'only', 'own', 'same', 'than', 'too', 'very', 'just', 'also', 'now',
+    'patient', 'year', 'old', 'presents', 'presenting', 'history',
+    'reports', 'complains', 'noted', 'shows', 'reveals', 'indicates',
+    'appears', 'examination', 'clinical', 'finding', 'findings',
+    'following', 'recent', 'past', 'days', 'weeks', 'months', 'years'
+]);
+
+// Extract meaningful medical/dental tags from a clinical scenario
+const extractMedicalTags = (scenario: string): string[] => {
+    const words = scenario
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length >= MIN_WORD_LENGTH && !STOPWORDS.has(word));
+    
+    // Prioritize known medical/dental terms
+    const priorityTags: string[] = [];
+    const otherWords: string[] = [];
+    
+    words.forEach(word => {
+        if (DENTAL_MEDICAL_TAGS.has(word)) {
+            if (!priorityTags.includes(word)) {
+                priorityTags.push(word);
+            }
+        } else if (!otherWords.includes(word)) {
+            otherWords.push(word);
+        }
+    });
+    
+    // Also check for compound terms (e.g., "root canal", "bone loss")
+    const scenarioLower = scenario.toLowerCase();
+    const compoundTerms = [
+        'root canal', 'bone loss', 'bone graft', 'sinus tract', 'cleft palate',
+        'cleft lip', 'lichen planus', 'dry socket', 'wisdom tooth'
+    ];
+    
+    compoundTerms.forEach(term => {
+        if (scenarioLower.includes(term) && !priorityTags.includes(term)) {
+            priorityTags.push(term);
+        }
+    });
+    
+    // Return priority tags first, then fill with other relevant words
+    return [...priorityTags, ...otherWords];
+};
+
 // Helper function to generate search URL for clinical images
 const getImageSearchUrl = (scenario: string): string => {
-    // Extract key terms from the scenario for image search
-    const keywords = scenario
-        .toLowerCase()
-        .replace(/[^\w\s]/g, ' ')
-        .split(' ')
-        .filter(word => word.length > MIN_WORD_LENGTH)
-        .slice(0, MAX_IMAGE_KEYWORDS)
-        .join(' ');
+    // Extract meaningful medical/dental tags from the scenario
+    const tags = extractMedicalTags(scenario).slice(0, MAX_IMAGE_KEYWORDS);
+    const keywords = tags.join(' ');
     
-    // Add dental/medical context
-    const searchTerms = `${keywords} dental radiograph xray clinical`;
+    // Add dental context for better image results
+    const searchTerms = `${keywords} dental radiograph`;
     return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(searchTerms)}`;
 };
 
 // Helper function to get Radiopaedia search URL for radiograph references
 const getRadiopaediaUrl = (scenario: string): string => {
-    const keywords = scenario
-        .toLowerCase()
-        .replace(/[^\w\s]/g, ' ')
-        .split(' ')
-        .filter(word => word.length > MIN_WORD_LENGTH)
-        .slice(0, MAX_RADIOPAEDIA_KEYWORDS)
-        .join('+');
+    // Extract meaningful medical/dental tags for Radiopaedia search
+    const tags = extractMedicalTags(scenario).slice(0, MAX_RADIOPAEDIA_KEYWORDS);
+    const keywords = tags.join('+');
     return `https://radiopaedia.org/search?q=${keywords}&scope=all`;
 };
 
