@@ -34,3 +34,264 @@ body.dark {
 ::-webkit-scrollbar-thumb:hover {
   background: #6b7280; 
 }
+
+/* ===================== */
+/* Enhanced Animations   */
+/* ===================== */
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Scale in animation for cards */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Skeleton loading pulse */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+
+/* Floating animation for hero icons */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 3s ease-in-out 0.5s infinite;
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-text {
+  background-size: 200% auto;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* ===================== */
+/* Improved Focus States */
+/* ===================== */
+
+/* Better focus ring for accessibility */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===================== */
+/* Mobile Improvements   */
+/* ===================== */
+
+/* Better touch targets on mobile - only for primary interactive elements */
+@media (max-width: 768px) {
+  button:not(.inline-btn),
+  a:not(.inline-link) {
+    min-height: 44px;
+  }
+  
+  /* Smoother scrolling on mobile */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent zoom on input focus - using base font size */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+/* ===================== */
+/* Card Hover Effects    */
+/* ===================== */
+
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* ===================== */
+/* Progress Bar Styles   */
+/* ===================== */
+
+.progress-bar {
+  transition: width 0.5s ease-out;
+}
+
+/* ===================== */
+/* Glassmorphism Effect  */
+/* ===================== */
+
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===================== */
+/* Badge Styles          */
+/* ===================== */
+
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.dark .badge-primary {
+  @apply bg-blue-900 text-blue-200;
+}
+
+.badge-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.dark .badge-success {
+  @apply bg-green-900 text-green-200;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.dark .badge-warning {
+  @apply bg-yellow-900 text-yellow-200;
+}
+
+/* ===================== */
+/* Tooltip Styles        */
+/* ===================== */
+
+.tooltip {
+  @apply invisible absolute;
+  transition: visibility 0s linear 0.15s, opacity 0.15s ease-in-out;
+}
+
+.has-tooltip:hover .tooltip {
+  @apply visible;
+  transition-delay: 0s;
+}
+
+/* ===================== */
+/* Study Mode Styles     */
+/* ===================== */
+
+/* Flashcard flip animation enhancement */
+.flashcard-container {
+  perspective: 2000px;
+}
+
+.flashcard {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.flashcard.flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
