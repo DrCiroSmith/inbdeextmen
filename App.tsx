@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { PLAYLISTS, INBDE_INFO } from './constants';
 import { Playlist, AppState, StudyData, VideoInfo } from './types';
 import { PlaylistCard } from './components/PlaylistCard';
@@ -10,11 +10,13 @@ import { MockExam } from './components/MockExam';
 import { generateVideoStudyData, getVideosForPlaylist } from './services/geminiService';
 import { getAllCachedVideoUrls } from './services/cacheService';
 
-// Calculate total videos count
-const TOTAL_VIDEOS = PLAYLISTS.reduce((acc, playlist) => {
-  const videos = getVideosForPlaylist(playlist);
-  return acc + videos.length;
-}, 0);
+// Calculate total videos count once at module load (playlists are static)
+const TOTAL_VIDEOS = (() => {
+  return PLAYLISTS.reduce((acc, playlist) => {
+    const videos = getVideosForPlaylist(playlist);
+    return acc + videos.length;
+  }, 0);
+})();
 
 const App: React.FC = () => {
   // Dark mode state with localStorage persistence
@@ -41,14 +43,19 @@ const App: React.FC = () => {
     localStorage.setItem('dark_mode', String(darkMode));
   }, [darkMode]);
 
-  // Calculate study progress from cached videos
-  useEffect(() => {
+  // Function to update study progress from cache
+  const updateStudyProgress = useCallback(() => {
     const cachedUrls = getAllCachedVideoUrls();
     setStudyProgress({
       videosStudied: cachedUrls.size,
       totalVideos: TOTAL_VIDEOS
     });
   }, []);
+
+  // Calculate study progress from cached videos on mount
+  useEffect(() => {
+    updateStudyProgress();
+  }, [updateStudyProgress]);
 
   // Load API key from localStorage or environment
   const [apiKey, setApiKey] = useState(() => {
@@ -110,11 +117,7 @@ const App: React.FC = () => {
       setGeneratedData(data);
       setAppState(AppState.COMPLETE);
       // Update progress after successful generation
-      const cachedUrls = getAllCachedVideoUrls();
-      setStudyProgress({
-        videosStudied: cachedUrls.size,
-        totalVideos: TOTAL_VIDEOS
-      });
+      updateStudyProgress();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
       setAppState(AppState.ERROR);

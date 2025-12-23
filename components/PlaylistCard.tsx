@@ -1,6 +1,9 @@
 import React from 'react';
 import { Playlist } from '../types';
 
+// Average video duration in minutes (based on Mental Dental video lengths)
+const AVERAGE_VIDEO_DURATION_MINUTES = 15;
+
 // Video counts for each playlist
 const VIDEO_COUNTS: Record<string, number> = {
   'Head and Neck Anatomy': 20,
@@ -121,7 +124,7 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist, onSelect, 
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           </svg>
-          <span>~{Math.round(videoCount * 15)} min</span>
+          <span>~{Math.round(videoCount * AVERAGE_VIDEO_DURATION_MINUTES)} min</span>
         </div>
       </div>
     </button>

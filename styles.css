@@ -163,11 +163,11 @@ select:focus-visible {
 /* Mobile Improvements   */
 /* ===================== */
 
-/* Better touch targets on mobile */
+/* Better touch targets on mobile - only for primary interactive elements */
 @media (max-width: 768px) {
-  button, a {
+  button:not(.inline-btn),
+  a:not(.inline-link) {
     min-height: 44px;
-    min-width: 44px;
   }
   
   /* Smoother scrolling on mobile */
@@ -176,9 +176,9 @@ select:focus-visible {
     -webkit-overflow-scrolling: touch;
   }
   
-  /* Prevent zoom on input focus */
+  /* Prevent zoom on input focus - using base font size */
   input, select, textarea {
-    font-size: 16px !important;
+    font-size: 16px;
   }
 }
 
