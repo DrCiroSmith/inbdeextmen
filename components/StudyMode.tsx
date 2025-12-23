@@ -207,10 +207,13 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
             // Check if all pairs are correctly matched
             const rightOptions = matchingState.rightOptions;
             const matches = matchingState.matches;
+            // Pre-compute a map of right values to their indices for O(n) lookup
+            const rightValueToIndex = new Map<string, number>();
+            rightOptions.forEach((val, idx) => rightValueToIndex.set(val, idx));
+            
             return exercise.pairs.every((pair, pairIndex) => {
-                // Find which rightIndex has this pair's right value
-                const rightIndex = rightOptions.findIndex(r => r === pair.right);
-                if (rightIndex === -1) return false;
+                const rightIndex = rightValueToIndex.get(pair.right);
+                if (rightIndex === undefined) return false;
                 const matchedLeftIndex = matches[rightIndex];
                 return matchedLeftIndex === pairIndex;
             });
@@ -651,7 +654,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                         <div className={`p-3 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded border`}>
-                                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'} uppercase`}>Your Answer</span>
+                                            <span className="text-xs text-gray-500 uppercase">Your Answer</span>
                                             <p className={`font-medium ${quizAnswers[index] === quiz.correctAnswer 
                                                 ? darkMode ? 'text-green-400' : 'text-green-600' 
                                                 : darkMode ? 'text-red-400' : 'text-red-600'
@@ -660,7 +663,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                             </p>
                                         </div>
                                         <div className={`p-3 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded border`}>
-                                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'} uppercase`}>Correct Answer</span>
+                                            <span className="text-xs text-gray-500 uppercase">Correct Answer</span>
                                             <p className={`font-medium ${darkMode ? 'text-green-400' : 'text-green-600'}`}>{quiz.correctAnswer}</p>
                                         </div>
                                     </div>
