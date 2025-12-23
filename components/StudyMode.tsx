@@ -98,19 +98,19 @@ const extractMedicalTags = (scenario: string): string[] => {
     ];
     
     compoundTerms.forEach(term => {
-        if (scenarioLower.includes(term) && !priorityTags.includes(term.replace(' ', '_'))) {
+        if (scenarioLower.includes(term) && !priorityTags.includes(term)) {
             priorityTags.push(term);
         }
     });
     
     // Return priority tags first, then fill with other relevant words
-    return [...priorityTags, ...otherWords].slice(0, MAX_IMAGE_KEYWORDS);
+    return [...priorityTags, ...otherWords];
 };
 
 // Helper function to generate search URL for clinical images
 const getImageSearchUrl = (scenario: string): string => {
     // Extract meaningful medical/dental tags from the scenario
-    const tags = extractMedicalTags(scenario);
+    const tags = extractMedicalTags(scenario).slice(0, MAX_IMAGE_KEYWORDS);
     const keywords = tags.join(' ');
     
     // Add dental context for better image results
