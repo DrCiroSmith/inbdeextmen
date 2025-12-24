@@ -79,21 +79,29 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist, onSelect, 
       disabled={disabled}
       className={`
         text-left group relative flex flex-col p-6 rounded-2xl border-2 transition-all duration-300 animate-fade-in
+        card-3d card-shine overflow-hidden
         ${disabled 
           ? `opacity-50 cursor-not-allowed ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}` 
           : darkMode 
-            ? `bg-gray-800 ${colors.darkBorder} hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 cursor-pointer`
-            : `bg-white ${colors.border} hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 cursor-pointer`
+            ? `bg-gray-800 ${colors.darkBorder} hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer`
+            : `bg-white ${colors.border} hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/10 cursor-pointer`
         }
       `}
     >
+      {/* Gradient overlay on hover */}
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${
+        darkMode 
+          ? 'bg-gradient-to-br from-blue-900/20 via-transparent to-purple-900/20' 
+          : 'bg-gradient-to-br from-blue-50/50 via-transparent to-purple-50/50'
+      }`} />
+      
       {/* Icon and Series Badge */}
-      <div className="flex items-center justify-between w-full mb-4">
-        <div className={`p-3 ${darkMode ? colors.darkBg : colors.bg} ${darkMode ? colors.darkText : colors.text} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
+      <div className="flex items-center justify-between w-full mb-4 relative">
+        <div className={`p-3 ${darkMode ? colors.darkBg : colors.bg} ${darkMode ? colors.darkText : colors.text} rounded-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
           <span className="text-2xl">{icon}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-xs font-semibold ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'} px-2 py-1 rounded-full`}>
+          <span className={`text-xs font-semibold ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'} px-2.5 py-1 rounded-full group-hover:bg-blue-100 group-hover:text-blue-600 dark:group-hover:bg-blue-900 dark:group-hover:text-blue-300 transition-colors`}>
             {videoCount} videos
           </span>
           <span className={`text-xs font-semibold ${darkMode ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider`}>
@@ -103,18 +111,18 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist, onSelect, 
       </div>
       
       {/* Title */}
-      <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2 group-hover:text-blue-600 transition-colors`}>
+      <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2 group-hover:text-blue-600 transition-colors relative`}>
         {playlist.title}
       </h3>
       
       {/* Description */}
-      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} line-clamp-3 flex-grow`}>
+      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} line-clamp-3 flex-grow relative`}>
         {playlist.description}
       </p>
       
       {/* Bottom Action Indicator */}
-      <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'} flex items-center justify-between`}>
-        <div className="flex items-center gap-2 text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-100'} flex items-center justify-between relative`}>
+        <div className="flex items-center gap-2 text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0">
           <span>Start Learning</span>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:translate-x-1 transition-transform">
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
