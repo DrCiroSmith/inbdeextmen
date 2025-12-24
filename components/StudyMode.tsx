@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StudyData } from '../types';
+import { CategoryGameMode } from './CategoryGameMode';
 
 interface StudyModeProps {
     data: StudyData;
@@ -131,6 +132,7 @@ type Mode = 'flashcards' | 'quiz' | 'fillInTheBlank' | 'matching' | 'clinical';
 
 export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData, darkMode = false }) => {
     const [mode, setMode] = useState<Mode>('flashcards');
+    const [showGameMode, setShowGameMode] = useState(false);
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
@@ -490,20 +492,41 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
     const hasFlashcards = data.flashcards.length > 0;
     const hasMatching = (data.matching?.length ?? 0) > 0;
 
+    // If game mode is active, show the CategoryGameMode component
+    if (showGameMode) {
+        return (
+            <CategoryGameMode
+                data={data}
+                onExit={() => setShowGameMode(false)}
+                darkMode={darkMode}
+            />
+        );
+    }
+
     return (
         <div className={`max-w-4xl mx-auto p-6 ${darkMode ? 'text-gray-100' : ''}`}>
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
                     <h2 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{data.videoTitle}</h2>
                     <p className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm`}>{data.playlistTitle}</p>
                 </div>
-                <button
-                    onClick={onExit}
-                    className={`px-4 py-2 ${darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-600 hover:text-gray-900'} font-medium`}
-                >
-                    Exit Study Mode
-                </button>
+                <div className="flex items-center gap-3">
+                    {/* Game Mode Button */}
+                    <button
+                        onClick={() => setShowGameMode(true)}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-pink-500 transition-all shadow-md hover:shadow-lg hover:shadow-purple-500/25 flex items-center gap-2 hover:scale-105"
+                    >
+                        <span className="text-lg">🎮</span> 
+                        <span className="hidden sm:inline">Play Game</span>
+                    </button>
+                    <button
+                        onClick={onExit}
+                        className={`px-4 py-2 ${darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-600 hover:text-gray-900'} font-medium`}
+                    >
+                        Exit Study Mode
+                    </button>
+                </div>
             </div>
 
             {/* Tabs with Progress Pills */}
