@@ -167,31 +167,29 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'} font-sans`}>
-      {/* Navbar */}
-      <nav className={`${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} border-b sticky top-0 z-50 backdrop-blur-sm`}>
+      {/* Navbar - Enhanced with glassmorphism */}
+      <nav className={`${darkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-gray-200/50'} border-b sticky top-0 z-50 backdrop-blur-xl shadow-sm`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
-                <span className="text-lg">🦷</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-shadow cursor-pointer group">
+                <span className="text-xl group-hover:animate-bounce">🦷</span>
               </div>
-              <span className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+              <span className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
                 INBDE Study Platform
               </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               {apiKey && (
-                <span className={`hidden sm:flex text-xs font-mono ${darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700'} px-3 py-1 rounded-full items-center gap-1`}>
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                <span className={`hidden sm:flex text-xs font-mono ${darkMode ? 'bg-green-900/50 text-green-300 border-green-700/50' : 'bg-green-100 text-green-700 border-green-200'} px-3 py-1.5 rounded-full items-center gap-1.5 border`}>
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                   API Ready
                 </span>
               )}
-              {/* Dark Mode Toggle */}
+              {/* Dark Mode Toggle - Enhanced */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`p-2 rounded-lg transition-all duration-300 ${darkMode ? 'bg-gray-700 text-yellow-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                className={`p-2.5 rounded-xl transition-all duration-300 ${darkMode ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700 hover:text-yellow-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'} hover:scale-105`}
                 aria-label="Toggle dark mode"
               >
                 {darkMode ? (
@@ -206,19 +204,20 @@ const App: React.FC = () => {
               </button>
               <button
                 onClick={() => setShowMockExam(true)}
-                className="text-sm bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all shadow-sm flex items-center gap-1"
+                className="text-sm bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-green-500 hover:to-emerald-500 transition-all shadow-md hover:shadow-lg hover:shadow-green-500/25 flex items-center gap-1.5 hover:scale-105"
               >
-                <span className="hidden sm:inline">🏆</span> Mock Exam
+                <span className="text-base">🏆</span> 
+                <span className="hidden sm:inline">Mock Exam</span>
               </button>
               <button
                 onClick={() => setShowExamInfo(true)}
-                className={`hidden sm:flex text-sm ${darkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'} font-medium transition-colors items-center gap-1`}
+                className={`hidden sm:flex text-sm ${darkMode ? 'text-gray-300 hover:text-blue-400 bg-gray-800 hover:bg-gray-700' : 'text-gray-600 hover:text-blue-600 bg-gray-100 hover:bg-gray-200'} font-medium transition-all items-center gap-1.5 px-3 py-2 rounded-xl hover:scale-105`}
               >
                 📋 Info
               </button>
               <button
                 onClick={() => setShowApiKeyInput(true)}
-                className={`p-2 rounded-lg ${darkMode ? 'text-gray-300 hover:text-blue-400 hover:bg-gray-700' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'} transition-colors`}
+                className={`p-2.5 rounded-xl ${darkMode ? 'text-gray-300 hover:text-blue-400 bg-gray-800 hover:bg-gray-700' : 'text-gray-600 hover:text-blue-600 bg-gray-100 hover:bg-gray-200'} transition-all hover:scale-105`}
                 aria-label="Settings"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -394,111 +393,142 @@ const App: React.FC = () => {
         {/* SELECTION STATE */}
         {appState === AppState.IDLE && (
           <>
-            {/* Hero Section - Enhanced */}
-            <div className="text-center mb-10 sm:mb-12 animate-fade-in">
-              {/* Floating decorative elements */}
-              <div className="relative">
-                <div className="absolute -top-4 left-1/4 text-4xl opacity-20 animate-float hidden md:block">🦷</div>
-                <div className="absolute -top-2 right-1/4 text-3xl opacity-20 animate-float-delayed hidden md:block">📚</div>
+            {/* Hero Section - Enhanced with gradient background */}
+            <div className="text-center mb-10 sm:mb-12 animate-fade-in relative">
+              {/* Background decorative elements */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className={`absolute -top-20 -left-20 w-72 h-72 ${darkMode ? 'bg-blue-600/10' : 'bg-blue-400/20'} rounded-full blur-3xl`}></div>
+                <div className={`absolute -top-10 -right-10 w-64 h-64 ${darkMode ? 'bg-purple-600/10' : 'bg-purple-400/20'} rounded-full blur-3xl`}></div>
+                <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-32 ${darkMode ? 'bg-indigo-600/5' : 'bg-indigo-400/10'} rounded-full blur-3xl`}></div>
               </div>
               
-              <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold ${darkMode ? 'text-gray-100' : 'text-gray-900'} tracking-tight mb-4`}>
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+              {/* Floating decorative elements with enhanced animations */}
+              <div className="relative">
+                <div className="absolute -top-8 left-1/4 text-5xl opacity-20 animate-float hidden md:block select-none">🦷</div>
+                <div className="absolute -top-4 right-1/4 text-4xl opacity-20 animate-float-delayed hidden md:block select-none">📚</div>
+                <div className="absolute top-12 left-1/6 text-3xl opacity-10 animate-float hidden lg:block select-none">✨</div>
+                <div className="absolute top-8 right-1/6 text-3xl opacity-10 animate-float-delayed hidden lg:block select-none">💡</div>
+              </div>
+              
+              {/* Main heading with animated gradient */}
+              <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold ${darkMode ? 'text-gray-100' : 'text-gray-900'} tracking-tight mb-4 relative`}>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-[length:200%_auto] animate-gradient">
                   Ace the INBDE
                 </span>
               </h1>
-              <p className={`max-w-2xl mx-auto text-base sm:text-lg ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-6 px-4`}>
+              
+              {/* Animated underline */}
+              <div className="flex justify-center mb-6">
+                <div className={`h-1 w-24 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 animate-pulse`}></div>
+              </div>
+              
+              <p className={`max-w-2xl mx-auto text-base sm:text-lg ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-8 px-4 relative`}>
                 Master the Integrated National Board Dental Examination with AI-powered study materials. 
                 Flashcards, practice questions, and clinical scenarios at your fingertips.
               </p>
               
-              {/* Quick Stats - Improved Mobile Layout */}
+              {/* Quick Stats - Enhanced with hover effects */}
               <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-6 px-2">
-                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm border flex items-center gap-2 transition-transform hover:scale-105`}>
-                  <span className="text-xl sm:text-2xl">📝</span>
-                  <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} text-sm sm:text-base`}><strong>{INBDE_INFO.format.totalQuestions}</strong> Questions</span>
+                <div className={`${darkMode ? 'bg-gray-800/80 border-gray-700 hover:border-blue-500' : 'bg-white/80 border-gray-200 hover:border-blue-400'} backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm border-2 flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group cursor-default`}>
+                  <span className="text-xl sm:text-2xl group-hover:animate-bounce">📝</span>
+                  <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} text-sm sm:text-base`}><strong className="text-blue-600">{INBDE_INFO.format.totalQuestions}</strong> Questions</span>
                 </div>
-                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm border flex items-center gap-2 transition-transform hover:scale-105`}>
-                  <span className="text-xl sm:text-2xl">📅</span>
-                  <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} text-sm sm:text-base`}><strong>{INBDE_INFO.format.days}</strong> Test Days</span>
+                <div className={`${darkMode ? 'bg-gray-800/80 border-gray-700 hover:border-green-500' : 'bg-white/80 border-gray-200 hover:border-green-400'} backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm border-2 flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group cursor-default`}>
+                  <span className="text-xl sm:text-2xl group-hover:animate-bounce">📅</span>
+                  <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} text-sm sm:text-base`}><strong className="text-green-600">{INBDE_INFO.format.days}</strong> Test Days</span>
                 </div>
-                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm border flex items-center gap-2 transition-transform hover:scale-105`}>
-                  <span className="text-xl sm:text-2xl">🎯</span>
-                  <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} text-sm sm:text-base`}>Pass: <strong>{INBDE_INFO.scoring.passingScore}</strong></span>
+                <div className={`${darkMode ? 'bg-gray-800/80 border-gray-700 hover:border-purple-500' : 'bg-white/80 border-gray-200 hover:border-purple-400'} backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm border-2 flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group cursor-default`}>
+                  <span className="text-xl sm:text-2xl group-hover:animate-bounce">🎯</span>
+                  <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} text-sm sm:text-base`}>Pass: <strong className="text-purple-600">{INBDE_INFO.scoring.passingScore}</strong></span>
                 </div>
                 <button
                   onClick={() => setShowExamInfo(true)}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm flex items-center gap-2 hover:from-blue-700 hover:to-indigo-700 transition-all text-sm sm:text-base"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg flex items-center gap-2 hover:from-blue-700 hover:to-indigo-700 transition-all text-sm sm:text-base hover:scale-105 hover:shadow-xl group"
                 >
-                  <span>📋</span>
+                  <span className="group-hover:rotate-12 transition-transform">📋</span>
                   <span className="font-semibold">Exam Details</span>
                 </button>
               </div>
 
-              {/* Study Progress Bar */}
+              {/* Study Progress Bar - Enhanced */}
               {studyProgress.videosStudied > 0 && (
-                <div className={`max-w-md mx-auto mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>📊 Your Progress</span>
-                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{studyProgress.videosStudied}/{studyProgress.totalVideos} videos</span>
+                <div className={`max-w-md mx-auto mb-6 ${darkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-sm rounded-2xl p-5 shadow-lg border-2 ${darkMode ? 'border-gray-700' : 'border-gray-200'} transition-all hover:shadow-xl`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className={`text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} flex items-center gap-2`}>
+                      <span className="animate-pulse">📊</span> Your Progress
+                    </span>
+                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{studyProgress.videosStudied}/{studyProgress.totalVideos} videos</span>
                   </div>
-                  <div className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-2.5 overflow-hidden`}>
+                  <div className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-3 overflow-hidden`}>
                     <div 
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 h-2.5 rounded-full transition-all duration-500 progress-bar"
+                      className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 h-3 rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
                       style={{ width: `${progressPercentage}%` }}
-                    ></div>
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent shimmer"></div>
+                    </div>
                   </div>
-                  <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'} mt-2`}>{progressPercentage}% complete - Keep going! 💪</p>
+                  <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'} mt-2 flex items-center justify-center gap-1`}>
+                    <span className="font-semibold text-green-600">{progressPercentage}%</span> complete - Keep going! 
+                    <span className="animate-bounce inline-block">💪</span>
+                  </p>
                 </div>
               )}
 
-              {/* Mock Exam CTA - Improved */}
+              {/* Mock Exam CTA - Enhanced with glow effect */}
               <div className="flex justify-center mb-8 px-4">
                 <button
                   onClick={() => setShowMockExam(true)}
-                  className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 sm:px-8 py-4 rounded-2xl shadow-lg flex items-center justify-center sm:justify-start gap-3 hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 group"
+                  className="w-full sm:w-auto bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white px-8 sm:px-10 py-5 rounded-2xl shadow-xl flex items-center justify-center sm:justify-start gap-4 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-green-500/25 group relative overflow-hidden"
                 >
-                  <span className="text-2xl sm:text-3xl group-hover:animate-bounce">🏆</span>
-                  <div className="text-left">
-                    <span className="font-bold text-base sm:text-lg block">Take Mock Exam</span>
-                    <span className="text-xs sm:text-sm opacity-90">Timed practice with real-world questions</span>
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  
+                  <span className="text-3xl sm:text-4xl group-hover:animate-bounce relative z-10">🏆</span>
+                  <div className="text-left relative z-10">
+                    <span className="font-bold text-lg sm:text-xl block">Take Mock Exam</span>
+                    <span className="text-sm opacity-90">Timed practice with real-world questions</span>
                   </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 ml-2 group-hover:translate-x-2 transition-transform relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </button>
               </div>
             </div>
 
-            {/* Study Materials Section Header with Search */}
+            {/* Study Materials Section Header with Search - Enhanced */}
             <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                 <div>
-                  <h2 className={`text-xl sm:text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>📚 Study Playlists</h2>
-                  <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm sm:text-base`}>
-                    {PLAYLISTS.length} playlists • {TOTAL_VIDEOS} videos
+                  <h2 className={`text-2xl sm:text-3xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} flex items-center gap-2`}>
+                    <span className="animate-bounce">📚</span> Study Playlists
+                  </h2>
+                  <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm sm:text-base mt-1`}>
+                    <span className="font-semibold text-blue-600">{PLAYLISTS.length}</span> playlists • <span className="font-semibold text-green-600">{TOTAL_VIDEOS}</span> videos
                   </p>
                 </div>
                 
-                {/* Search Input */}
-                <div className="relative w-full sm:w-72">
+                {/* Search Input - Enhanced */}
+                <div className="relative w-full sm:w-80 group">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search playlists..."
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    className={`w-full pl-11 pr-10 py-3 rounded-2xl border-2 focus:outline-none focus:ring-4 transition-all duration-300 ${
                       darkMode 
-                        ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500' 
-                        : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
-                    }`}
+                        ? 'bg-gray-800/80 border-gray-700 text-gray-100 placeholder-gray-500 focus:ring-blue-500/20 focus:border-blue-500' 
+                        : 'bg-white/80 border-gray-200 text-gray-900 placeholder-gray-400 focus:ring-blue-500/20 focus:border-blue-500'
+                    } backdrop-blur-sm shadow-sm hover:shadow-md`}
                   />
-                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${searchQuery ? 'text-blue-500' : darkMode ? 'text-gray-500' : 'text-gray-400'}`} viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-all hover:scale-110 ${darkMode ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                       </svg>
                     </button>
@@ -508,19 +538,26 @@ const App: React.FC = () => {
               
               {/* Search Results Info */}
               {searchQuery && (
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <div className={`text-sm ${darkMode ? 'text-gray-400 bg-gray-800/50' : 'text-gray-500 bg-gray-100/50'} px-4 py-2 rounded-lg inline-block`}>
                   {filteredPlaylists.length === 0 
-                    ? `No playlists found for "${searchQuery}"` 
-                    : `Showing ${filteredPlaylists.length} playlist${filteredPlaylists.length !== 1 ? 's' : ''} matching "${searchQuery}"`
+                    ? <span>No playlists found for "<span className="font-semibold text-red-500">{searchQuery}</span>"</span>
+                    : <span>Showing <span className="font-semibold text-blue-600">{filteredPlaylists.length}</span> playlist{filteredPlaylists.length !== 1 ? 's' : ''} matching "<span className="font-semibold">{searchQuery}</span>"</span>
                   }
-                </p>
+                </div>
               )}
             </div>
 
             {/* Playlist Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
               {filteredPlaylists.map((playlist, index) => (
-                <div key={playlist.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-slide-up">
+                <div 
+                  key={playlist.id} 
+                  style={{ 
+                    animationDelay: `${index * 75}ms`,
+                    animationFillMode: 'forwards'
+                  }} 
+                  className="animate-slide-up"
+                >
                   <PlaylistCard
                     playlist={playlist}
                     onSelect={handleSelectPlaylist}
@@ -546,31 +583,47 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Features Section - Improved */}
-            <div className={`mt-12 sm:mt-16 ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-800/50' : 'bg-gradient-to-br from-blue-50 to-indigo-50'} rounded-3xl p-6 sm:p-10 border ${darkMode ? 'border-gray-700' : 'border-blue-100'}`}>
-              <h3 className={`text-xl sm:text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} text-center mb-8`}>
-                Why Choose Our Platform?
-              </h3>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-2xl p-5 text-center transition-transform hover:scale-105`}>
-                  <div className="text-3xl sm:text-4xl mb-3 animate-float">🤖</div>
-                  <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>AI-Powered</h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Google Gemini AI generates personalized study materials</p>
-                </div>
-                <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-2xl p-5 text-center transition-transform hover:scale-105`}>
-                  <div className="text-3xl sm:text-4xl mb-3 animate-float-delayed">📖</div>
-                  <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>Comprehensive</h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>15 playlists covering all INBDE domains</p>
-                </div>
-                <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-2xl p-5 text-center transition-transform hover:scale-105`}>
-                  <div className="text-3xl sm:text-4xl mb-3 animate-float">🎯</div>
-                  <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>Active Learning</h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Flashcards, MCQs, clinical scenarios & more</p>
-                </div>
-                <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-2xl p-5 text-center transition-transform hover:scale-105`}>
-                  <div className="text-3xl sm:text-4xl mb-3 animate-float-delayed">💾</div>
-                  <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1`}>Offline Ready</h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Download & cache materials for offline study</p>
+            {/* Features Section - Enhanced with staggered animations */}
+            <div className={`mt-12 sm:mt-16 ${darkMode ? 'bg-gradient-to-br from-gray-800/80 via-gray-800/60 to-gray-900/80' : 'bg-gradient-to-br from-blue-50 via-indigo-50/50 to-purple-50'} rounded-3xl p-6 sm:p-10 border ${darkMode ? 'border-gray-700/50' : 'border-blue-100'} backdrop-blur-sm relative overflow-hidden`}>
+              {/* Background pattern */}
+              <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none"></div>
+              
+              <div className="relative">
+                <h3 className={`text-xl sm:text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} text-center mb-2`}>
+                  Why Choose Our Platform?
+                </h3>
+                <p className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-8 text-sm`}>
+                  Everything you need to ace the INBDE in one place
+                </p>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className={`${darkMode ? 'bg-gray-800/70 hover:bg-gray-800 border-gray-700/50 hover:border-blue-500/50' : 'bg-white/80 hover:bg-white border-white/50 hover:border-blue-300'} backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-xl group border card-shine`}>
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-shadow">
+                      <span className="text-3xl group-hover:animate-bounce">🤖</span>
+                    </div>
+                    <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2 text-lg`}>AI-Powered</h4>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Google Gemini AI generates personalized study materials</p>
+                  </div>
+                  <div className={`${darkMode ? 'bg-gray-800/70 hover:bg-gray-800 border-gray-700/50 hover:border-green-500/50' : 'bg-white/80 hover:bg-white border-white/50 hover:border-green-300'} backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-xl group border card-shine`}>
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-green-500/25 transition-shadow">
+                      <span className="text-3xl group-hover:animate-bounce">📖</span>
+                    </div>
+                    <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2 text-lg`}>Comprehensive</h4>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>15 playlists covering all INBDE domains</p>
+                  </div>
+                  <div className={`${darkMode ? 'bg-gray-800/70 hover:bg-gray-800 border-gray-700/50 hover:border-purple-500/50' : 'bg-white/80 hover:bg-white border-white/50 hover:border-purple-300'} backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-xl group border card-shine`}>
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-purple-500/25 transition-shadow">
+                      <span className="text-3xl group-hover:animate-bounce">🎯</span>
+                    </div>
+                    <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2 text-lg`}>Active Learning</h4>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Flashcards, MCQs, clinical scenarios & more</p>
+                  </div>
+                  <div className={`${darkMode ? 'bg-gray-800/70 hover:bg-gray-800 border-gray-700/50 hover:border-orange-500/50' : 'bg-white/80 hover:bg-white border-white/50 hover:border-orange-300'} backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-xl group border card-shine`}>
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-orange-500/25 transition-shadow">
+                      <span className="text-3xl group-hover:animate-bounce">💾</span>
+                    </div>
+                    <h4 className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2 text-lg`}>Offline Ready</h4>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Download & cache materials for offline study</p>
+                  </div>
                 </div>
               </div>
             </div>
