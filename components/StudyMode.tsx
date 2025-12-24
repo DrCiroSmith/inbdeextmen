@@ -168,32 +168,41 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
         return `${baseClasses} bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100 hover:scale-102`;
     };
 
-    const getRightItemClassName = (hasMatch: boolean, canClick: boolean, darkMode: boolean): string => {
-        const baseClasses = 'p-3 rounded-lg border-2 border-dashed flex items-center justify-between gap-3 min-h-[56px] transition-all';
-        const clickableClass = canClick ? 'cursor-pointer' : '';
+    const getRightItemClassName = (isSelected: boolean, hasMatch: boolean, hasAnySelection: boolean, darkMode: boolean): string => {
+        const baseClasses = 'p-3 rounded-lg border-2 flex items-center justify-between gap-3 min-h-[56px] transition-all cursor-pointer';
+        const borderStyle = isSelected ? 'border-solid' : 'border-dashed';
+        
+        if (isSelected) {
+            const selectedClasses = darkMode 
+                ? 'bg-blue-600 border-blue-500 scale-105 ring-2 ring-blue-400'
+                : 'bg-blue-600 border-blue-500 scale-105 ring-2 ring-blue-300';
+            return `${baseClasses} ${borderStyle} ${selectedClasses}`;
+        }
         
         if (hasMatch) {
             const matchClasses = darkMode ? 'border-blue-600 bg-blue-900/30' : 'border-blue-300 bg-blue-50';
-            return `${baseClasses} ${clickableClass} ${matchClasses}`;
+            return `${baseClasses} ${borderStyle} ${matchClasses}`;
         }
         
-        if (canClick) {
+        if (hasAnySelection) {
             const hoverClasses = darkMode 
                 ? 'border-blue-500 bg-gray-700 hover:bg-gray-600' 
                 : 'border-blue-400 bg-gray-50 hover:bg-blue-50';
-            return `${baseClasses} ${clickableClass} ${hoverClasses}`;
+            return `${baseClasses} ${borderStyle} ${hoverClasses}`;
         }
         
-        const defaultClasses = darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50';
-        return `${baseClasses} ${defaultClasses}`;
+        const defaultClasses = darkMode 
+            ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' 
+            : 'border-gray-200 bg-gray-50 hover:bg-gray-100';
+        return `${baseClasses} ${borderStyle} ${defaultClasses}`;
     };
 
-    const getRightItemLabelClassName = (hasMatch: boolean, canClick: boolean, darkMode: boolean): string => {
+    const getRightItemLabelClassName = (hasMatch: boolean, hasAnySelection: boolean, darkMode: boolean): string => {
         const baseClass = 'text-sm font-semibold';
         if (hasMatch) {
             return `${baseClass} ${darkMode ? 'text-blue-400' : 'text-blue-700'}`;
         }
-        if (canClick) {
+        if (hasAnySelection) {
             return `${baseClass} ${darkMode ? 'text-blue-400' : 'text-blue-600'}`;
         }
         return `${baseClass} ${darkMode ? 'text-gray-500' : 'text-gray-400'}`;
@@ -1060,17 +1069,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                             if (Number.isNaN(leftIndex)) return;
                                                             handleDropMatch(index, rightIndex, leftIndex);
                                                         }}
-                                                        className={`p-3 rounded-lg border-2 ${isRightSelected ? 'border-solid' : 'border-dashed'} flex items-center justify-between gap-3 min-h-[56px] transition-all cursor-pointer ${
-                                                            isRightSelected
-                                                                ? darkMode
-                                                                    ? 'bg-blue-600 border-blue-500 scale-105 ring-2 ring-blue-400'
-                                                                    : 'bg-blue-600 border-blue-500 scale-105 ring-2 ring-blue-300'
-                                                                : matchedLeft
-                                                                    ? darkMode ? 'border-blue-600 bg-blue-900/30' : 'border-blue-300 bg-blue-50'
-                                                                    : hasAnySelection
-                                                                        ? darkMode ? 'border-blue-500 bg-gray-700 hover:bg-gray-600' : 'border-blue-400 bg-gray-50 hover:bg-blue-50'
-                                                                        : darkMode ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
-                                                        }`}
+                                                        className={getRightItemClassName(isRightSelected, !!matchedLeft, hasAnySelection, darkMode)}
                                                     >
                                                         <span className={`font-medium ${isRightSelected ? 'text-white' : darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                                             {rightOption}
@@ -1079,13 +1078,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                         {!isRightSelected && (
                                                             <>
                                                                 <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>←</span>
-                                                                <span className={`text-sm font-semibold ${
-                                                                    matchedLeft 
-                                                                        ? darkMode ? 'text-blue-400' : 'text-blue-700' 
-                                                                        : hasAnySelection
-                                                                            ? darkMode ? 'text-blue-400' : 'text-blue-600'
-                                                                            : darkMode ? 'text-gray-500' : 'text-gray-400'
-                                                                }`}>
+                                                                <span className={getRightItemLabelClassName(!!matchedLeft, hasAnySelection, darkMode)}>
                                                                     {matchedLeft || (hasAnySelection ? 'Tap here' : 'Tap to select')}
                                                                 </span>
                                                             </>
