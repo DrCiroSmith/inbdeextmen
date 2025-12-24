@@ -34,13 +34,13 @@ const ACHIEVEMENTS: Achievement[] = [
     { id: 'streak_5', name: 'On Fire!', description: 'Get a 5-answer streak', icon: '🔥', requirement: (s) => s.bestStreak >= 5 },
     { id: 'streak_10', name: 'Unstoppable!', description: 'Get a 10-answer streak', icon: '⚡', requirement: (s) => s.bestStreak >= 10 },
     { id: 'streak_20', name: 'Master Mind', description: 'Get a 20-answer streak', icon: '🧠', requirement: (s) => s.bestStreak >= 20 },
-    { id: 'score_100', name: 'Century', description: 'Score 100 points', icon: '💯', requirement: (s) => s.totalScore >= 100 },
-    { id: 'score_500', name: 'High Scorer', description: 'Score 500 points', icon: '🏆', requirement: (s) => s.totalScore >= 500 },
-    { id: 'score_1000', name: 'Point Master', description: 'Score 1000 points', icon: '👑', requirement: (s) => s.totalScore >= 1000 },
-    { id: 'perfect_10', name: 'Perfect 10', description: 'Answer 10 questions with 100% accuracy', icon: '✨', requirement: (s) => s.totalQuestions >= 10 && s.correctAnswers === s.totalQuestions },
-    { id: 'speed_demon', name: 'Speed Demon', description: 'Average under 3 seconds per answer', icon: '⚡', requirement: (s) => s.averageTime > 0 && s.averageTime < 3 && s.totalQuestions >= 5 },
-    { id: 'questions_50', name: 'Dedicated', description: 'Answer 50 questions', icon: '📚', requirement: (s) => s.totalQuestions >= 50 },
-    { id: 'questions_100', name: 'Scholar', description: 'Answer 100 questions', icon: '🎓', requirement: (s) => s.totalQuestions >= 100 },
+    { id: 'score_100', name: 'Century', description: 'Score 100 points in a game', icon: '💯', requirement: (s) => s.totalScore >= 100 },
+    { id: 'score_500', name: 'High Scorer', description: 'Score 500 points in a game', icon: '🏆', requirement: (s) => s.totalScore >= 500 },
+    { id: 'score_1000', name: 'Point Master', description: 'Score 1000 points in a game', icon: '👑', requirement: (s) => s.totalScore >= 1000 },
+    { id: 'perfect_10', name: 'Perfect 10', description: 'Complete a game with 10+ questions and 100% accuracy', icon: '✨', requirement: (s) => s.totalQuestions >= 10 && s.correctAnswers === s.totalQuestions },
+    { id: 'speed_demon', name: 'Speed Demon', description: 'Average under 3 seconds per answer (5+ questions)', icon: '⚡', requirement: (s) => s.averageTime > 0 && s.averageTime < 3 && s.totalQuestions >= 5 },
+    { id: 'questions_50', name: 'Dedicated', description: 'Answer 50 questions in a game', icon: '📚', requirement: (s) => s.totalQuestions >= 50 },
+    { id: 'questions_100', name: 'Scholar', description: 'Answer 100 questions in a game', icon: '🎓', requirement: (s) => s.totalQuestions >= 100 },
 ];
 
 // Dental/Medical terminology questions for games
@@ -129,6 +129,7 @@ type GameMode = 'menu' | 'speed-quiz' | 'streak-challenge' | 'category-master' |
 
 export const LearningGames: React.FC<LearningGamesProps> = ({ onExit, darkMode = false }) => {
     const [gameMode, setGameMode] = useState<GameMode>('menu');
+    const [lastPlayedMode, setLastPlayedMode] = useState<GameMode>('speed-quiz');
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [questions, setQuestions] = useState<GameQuestion[]>([]);
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -144,8 +145,12 @@ export const LearningGames: React.FC<LearningGamesProps> = ({ onExit, darkMode =
     const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
     const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>(() => {
         if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('game_achievements');
-            return saved ? JSON.parse(saved) : [];
+            try {
+                const saved = localStorage.getItem('game_achievements');
+                return saved ? JSON.parse(saved) : [];
+            } catch {
+                return [];
+            }
         }
         return [];
     });
@@ -236,6 +241,7 @@ export const LearningGames: React.FC<LearningGamesProps> = ({ onExit, darkMode =
         }
         
         setQuestionStartTime(Date.now());
+        setLastPlayedMode(mode); // Save the game mode for "Play Again"
         setGameMode(mode);
     };
 
@@ -266,6 +272,9 @@ export const LearningGames: React.FC<LearningGamesProps> = ({ onExit, darkMode =
         if (timerRef.current) {
             clearInterval(timerRef.current);
         }
+        // Record the full time for this question (max time since timer ran out)
+        const maxTime = gameMode === 'speed-quiz' ? 15 : gameMode === 'streak-challenge' ? 10 : 20;
+        setTotalTime(prev => prev + maxTime);
         setShowResult(true);
         setStreak(0);
         setMultiplier(1);
@@ -331,10 +340,13 @@ export const LearningGames: React.FC<LearningGamesProps> = ({ onExit, darkMode =
         }
 
         // Check achievements
+        const basePoints = 10;
+        const timeBonus = isCorrect ? Math.max(0, Math.floor((timeRemaining / 15) * 10)) : 0;
+        const earnedPointsForAchievement = isCorrect ? (basePoints + timeBonus) * multiplier : 0;
         const stats: GameStats = {
-            totalScore: score + (isCorrect ? 10 * multiplier : 0),
+            totalScore: score + earnedPointsForAchievement,
             currentStreak: isCorrect ? streak + 1 : 0,
-            bestStreak: Math.max(bestStreak, isCorrect ? streak + 1 : 0),
+            bestStreak: Math.max(bestStreak, isCorrect ? streak + 1 : bestStreak),
             correctAnswers: correctAnswers + (isCorrect ? 1 : 0),
             totalQuestions: totalAnswered + 1,
             averageTime: (totalTime + answerTime) / (totalAnswered + 1),
@@ -587,7 +599,7 @@ export const LearningGames: React.FC<LearningGamesProps> = ({ onExit, darkMode =
                     {/* Action Buttons */}
                     <div className="flex flex-wrap justify-center gap-4">
                         <button
-                            onClick={() => startGame(gameMode === 'results' ? 'speed-quiz' : gameMode, selectedCategory || undefined)}
+                            onClick={() => startGame(lastPlayedMode, selectedCategory || undefined)}
                             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 flex items-center gap-2"
                         >
                             <span>🔄</span> Play Again
