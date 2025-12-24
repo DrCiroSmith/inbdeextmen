@@ -30,6 +30,9 @@ const App: React.FC = () => {
     return false;
   });
 
+  // Header visibility state
+  const [headerHidden, setHeaderHidden] = useState(false);
+
 
 
   // Search and filter state
@@ -45,6 +48,18 @@ const App: React.FC = () => {
     }
     localStorage.setItem('dark_mode', String(darkMode));
   }, [darkMode]);
+
+  // Scroll listener to show header when at top
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY === 0 && headerHidden) {
+        setHeaderHidden(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [headerHidden]);
 
 
 
@@ -169,20 +184,30 @@ const App: React.FC = () => {
     setAppState(AppState.COMPLETE);
   };
 
+  const handleToggleHeader = () => {
+    setHeaderHidden(!headerHidden);
+  };
+
   const progressPercentage = Math.round((studyProgress.videosStudied / studyProgress.totalVideos) * 100);
 
   return (
     <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'} font-sans`}>
       {/* Navbar - Enhanced with glassmorphism - Only shown on main page */}
-      {appState === AppState.IDLE && (
-      <nav className={`${darkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-gray-200/50'} border-b sticky top-0 z-50 backdrop-blur-xl shadow-sm`}>
+      {appState === AppState.IDLE && !headerHidden && (
+      <nav className={`${darkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-gray-200/50'} border-b sticky top-0 z-50 backdrop-blur-xl shadow-sm transition-all duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-shadow cursor-pointer group">
+              <div 
+                onClick={handleToggleHeader}
+                className="w-10 h-10 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-shadow cursor-pointer group"
+              >
                 <span className="text-xl group-hover:animate-bounce">🦷</span>
               </div>
-              <span className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+              <span 
+                onClick={handleBack}
+                className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 cursor-pointer hover:opacity-80 transition-opacity"
+              >
                 INBDE Study Platform
               </span>
             </div>
