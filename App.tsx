@@ -7,6 +7,7 @@ import { JsonViewer } from './components/JsonViewer';
 import { StudyMode } from './components/StudyMode';
 import { ExamInfo } from './components/ExamInfo';
 import { MockExam } from './components/MockExam';
+import { LearningGames } from './components/LearningGames';
 import { generateVideoStudyData, getVideosForPlaylist } from './services/geminiService';
 import { getAllCachedVideoUrls } from './services/cacheService';
 
@@ -67,6 +68,7 @@ const App: React.FC = () => {
   const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey);
   const [showExamInfo, setShowExamInfo] = useState(false);
   const [showMockExam, setShowMockExam] = useState(false);
+  const [showLearningGames, setShowLearningGames] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
@@ -210,6 +212,13 @@ const App: React.FC = () => {
                 <span className="hidden sm:inline">Mock Exam</span>
               </button>
               <button
+                onClick={() => setShowLearningGames(true)}
+                className="text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-purple-500 hover:to-pink-500 transition-all shadow-md hover:shadow-lg hover:shadow-purple-500/25 flex items-center gap-1.5 hover:scale-105"
+              >
+                <span className="text-base">🎮</span> 
+                <span className="hidden sm:inline">Games</span>
+              </button>
+              <button
                 onClick={() => setShowExamInfo(true)}
                 className={`hidden sm:flex text-sm ${darkMode ? 'text-gray-300 hover:text-blue-400 bg-gray-800 hover:bg-gray-700' : 'text-gray-600 hover:text-blue-600 bg-gray-100 hover:bg-gray-200'} font-medium transition-all items-center gap-1.5 px-3 py-2 rounded-xl hover:scale-105`}
               >
@@ -233,6 +242,13 @@ const App: React.FC = () => {
       {showMockExam && (
         <div className={`fixed inset-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} z-40 overflow-auto animate-fade-in`}>
           <MockExam onExit={() => setShowMockExam(false)} darkMode={darkMode} />
+        </div>
+      )}
+
+      {/* Learning Games Mode */}
+      {showLearningGames && (
+        <div className={`fixed inset-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} z-40 overflow-auto animate-fade-in`}>
+          <LearningGames onExit={() => setShowLearningGames(false)} darkMode={darkMode} />
         </div>
       )}
 
@@ -475,7 +491,7 @@ const App: React.FC = () => {
               )}
 
               {/* Mock Exam CTA - Enhanced with glow effect */}
-              <div className="flex justify-center mb-8 px-4">
+              <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8 px-4">
                 <button
                   onClick={() => setShowMockExam(true)}
                   className="w-full sm:w-auto bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white px-8 sm:px-10 py-5 rounded-2xl shadow-xl flex items-center justify-center sm:justify-start gap-4 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-green-500/25 group relative overflow-hidden"
@@ -487,6 +503,24 @@ const App: React.FC = () => {
                   <div className="text-left relative z-10">
                     <span className="font-bold text-lg sm:text-xl block">Take Mock Exam</span>
                     <span className="text-sm opacity-90">Timed practice with real-world questions</span>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 ml-2 group-hover:translate-x-2 transition-transform relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+
+                {/* Learning Games CTA */}
+                <button
+                  onClick={() => setShowLearningGames(true)}
+                  className="w-full sm:w-auto bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white px-8 sm:px-10 py-5 rounded-2xl shadow-xl flex items-center justify-center sm:justify-start gap-4 hover:from-purple-500 hover:via-pink-500 hover:to-rose-500 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 group relative overflow-hidden"
+                >
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  
+                  <span className="text-3xl sm:text-4xl group-hover:animate-bounce relative z-10">🎮</span>
+                  <div className="text-left relative z-10">
+                    <span className="font-bold text-lg sm:text-xl block">Play Learning Games</span>
+                    <span className="text-sm opacity-90">Fun quizzes with achievements & streaks</span>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 ml-2 group-hover:translate-x-2 transition-transform relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -662,6 +696,11 @@ const App: React.FC = () => {
                 <li>
                   <button onClick={() => setShowMockExam(true)} className="hover:text-blue-600 transition-colors">
                     🏆 Mock Exam
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setShowLearningGames(true)} className="hover:text-blue-600 transition-colors">
+                    🎮 Learning Games
                   </button>
                 </li>
                 <li>
