@@ -169,7 +169,8 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'} font-sans`}>
-      {/* Navbar - Enhanced with glassmorphism */}
+      {/* Navbar - Enhanced with glassmorphism - Only visible on main page (IDLE state) */}
+      {appState === AppState.IDLE && (
       <nav className={`${darkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-gray-200/50'} border-b sticky top-0 z-50 backdrop-blur-xl shadow-sm`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -237,6 +238,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </nav>
+      )}
 
       {/* Mock Exam Mode */}
       {showMockExam && (
