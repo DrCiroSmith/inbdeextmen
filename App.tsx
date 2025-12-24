@@ -30,6 +30,16 @@ const App: React.FC = () => {
     return false;
   });
 
+  // Header visibility state with localStorage persistence
+  const [headerVisible, setHeaderVisible] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('header_visible');
+      if (saved !== null) return saved === 'true';
+      return true; // Default to visible
+    }
+    return true;
+  });
+
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [studyProgress, setStudyProgress] = useState<{ videosStudied: number; totalVideos: number }>({ videosStudied: 0, totalVideos: TOTAL_VIDEOS });
@@ -43,6 +53,13 @@ const App: React.FC = () => {
     }
     localStorage.setItem('dark_mode', String(darkMode));
   }, [darkMode]);
+
+  // Save header visibility preference
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('header_visible', String(headerVisible));
+    }
+  }, [headerVisible]);
 
   // Function to update study progress from cache
   const updateStudyProgress = useCallback(() => {
@@ -171,7 +188,25 @@ const App: React.FC = () => {
     <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'} font-sans`}>
       {/* Navbar - Enhanced with glassmorphism - Only shown on main page */}
       {appState === AppState.IDLE && (
-      <nav className={`${darkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-gray-200/50'} border-b sticky top-0 z-50 backdrop-blur-xl shadow-sm`}>
+      <>
+        {/* Header Toggle Button - Always visible */}
+        <div className={`sticky top-0 z-50 ${darkMode ? 'bg-gray-900/95' : 'bg-white/95'} backdrop-blur-xl transition-all duration-300`}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end">
+            <button
+              onClick={() => setHeaderVisible(!headerVisible)}
+              className={`my-2 p-2 rounded-lg transition-all duration-300 ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'} flex items-center gap-2 text-sm font-medium group`}
+              aria-label={headerVisible ? "Hide header" : "Show header"}
+              title={headerVisible ? "Hide header" : "Show header"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform duration-300 ${headerVisible ? '' : 'rotate-180'}`} viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              <span className="text-xs">{headerVisible ? 'Hide' : 'Show'}</span>
+            </button>
+          </div>
+        </div>
+
+      <nav className={`${darkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-gray-200/50'} border-b sticky top-0 z-50 backdrop-blur-xl shadow-sm transition-all duration-500 overflow-hidden ${headerVisible ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 border-b-0'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -238,6 +273,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </nav>
+      </>
       )}
 
       {/* Mock Exam Mode */}
