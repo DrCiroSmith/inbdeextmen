@@ -615,15 +615,15 @@ export const MockExam: React.FC<MockExamProps> = ({ onExit, darkMode = false }) 
                     {/* Score Display - Enhanced with percentage prominently displayed */}
                     <div className="grid grid-cols-3 gap-4 mb-8">
                         <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl p-6 text-center`}>
-                            <div className={`text-5xl font-bold ${passed ? 'text-green-500' : 'text-red-500'} mb-1`}>{results.percentage}%</div>
+                            <div className={`text-4xl md:text-5xl font-bold ${passed ? 'text-green-500' : 'text-red-500'} mb-1 flex items-center justify-center`}>{results.percentage}%</div>
                             <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Score Percentage</div>
                         </div>
                         <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl p-6 text-center`}>
-                            <div className="text-4xl font-bold text-green-600 mb-1">{results.totalCorrect}</div>
+                            <div className="text-3xl md:text-4xl font-bold text-green-600 mb-1 flex items-center justify-center">{results.totalCorrect}</div>
                             <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Correct Answers</div>
                         </div>
                         <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl p-6 text-center`}>
-                            <div className={`text-4xl font-bold ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-1`}>{results.totalQuestions}</div>
+                            <div className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-1 flex items-center justify-center`}>{results.totalQuestions}</div>
                             <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Questions</div>
                         </div>
                     </div>

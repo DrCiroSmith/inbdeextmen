@@ -149,7 +149,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
             rightOptions: shuffleArray(exercise.pairs.map((pair) => pair.right)),
             matches: {} as Record<number, number>,
             showResults: false,
-            selectedLeftIndex: null as number | null
+            selectedLeftIndex: null as number | null,
+            selectedRightIndex: null as number | null
         })) ?? []
     ));
 
@@ -345,7 +346,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                 rightOptions: shuffleArray([newMatching.right.trim()]),
                 matches: {},
                 showResults: false,
-                selectedLeftIndex: null
+                selectedLeftIndex: null,
+                selectedRightIndex: null
             }
         ]);
         setNewMatching({ prompt: '', left: '', right: '', explanation: '' });
@@ -409,10 +411,25 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
     const handleSelectLeftItem = (exerciseIndex: number, leftIndex: number) => {
         setMatchingStates((prev) => prev.map((state, idx) => {
             if (idx !== exerciseIndex) return state;
-            // Toggle selection - if already selected, deselect; otherwise select
+            
+            // If a right item is already selected, create the match
+            if (state.selectedRightIndex !== null) {
+                const matches = { ...state.matches };
+                // Remove any existing match for this left item
+                Object.keys(matches).forEach((key) => {
+                    if (matches[Number(key)] === leftIndex) {
+                        delete matches[Number(key)];
+                    }
+                });
+                matches[state.selectedRightIndex] = leftIndex;
+                return { ...state, matches, selectedLeftIndex: null, selectedRightIndex: null };
+            }
+            
+            // Otherwise, toggle selection of this left item
             return { 
                 ...state, 
-                selectedLeftIndex: state.selectedLeftIndex === leftIndex ? null : leftIndex 
+                selectedLeftIndex: state.selectedLeftIndex === leftIndex ? null : leftIndex,
+                selectedRightIndex: null // Clear right selection when selecting left
             };
         }));
     };
@@ -431,16 +448,21 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                     }
                 });
                 matches[rightIndex] = state.selectedLeftIndex;
-                return { ...state, matches, selectedLeftIndex: null };
+                return { ...state, matches, selectedLeftIndex: null, selectedRightIndex: null };
             }
             
-            return state;
+            // Otherwise, toggle selection of this right item
+            return {
+                ...state,
+                selectedRightIndex: state.selectedRightIndex === rightIndex ? null : rightIndex,
+                selectedLeftIndex: null // Clear left selection when selecting right
+            };
         }));
     };
 
     const resetMatching = (exerciseIndex: number) => {
         setMatchingStates((prev) => prev.map((state, idx) => (
-            idx === exerciseIndex ? { ...state, matches: {}, showResults: false, selectedLeftIndex: null } : state
+            idx === exerciseIndex ? { ...state, matches: {}, showResults: false, selectedLeftIndex: null, selectedRightIndex: null } : state
         )));
     };
 
@@ -450,7 +472,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                 rightOptions: shuffleArray(exercise.pairs.map((pair) => pair.right)),
                 matches: {},
                 showResults: false,
-                selectedLeftIndex: null
+                selectedLeftIndex: null,
+                selectedRightIndex: null
             })) ?? []
         );
     }, [data.matching]);
@@ -968,7 +991,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                             <div>
                                 <h4 className={`font-semibold ${darkMode ? 'text-blue-300' : 'text-blue-800'} mb-1`}>How to Match</h4>
                                 <p className={`text-sm ${darkMode ? 'text-blue-200' : 'text-blue-700'}`}>
-                                    <strong>Desktop:</strong> Drag terms from left to right. <strong>Mobile:</strong> Tap a term on the left to select it, then tap the matching option on the right.
+                                    <strong>Desktop:</strong> Drag terms from left to right. <strong>Mobile:</strong> Tap any option, then tap another to create a match.
                                 </p>
                             </div>
                         </div>
@@ -980,6 +1003,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                             const rightOptions = matchingState?.rightOptions ?? [];
                             const matches = matchingState?.matches ?? {};
                             const selectedLeftIndex = matchingState?.selectedLeftIndex;
+                            const selectedRightIndex = matchingState?.selectedRightIndex;
                             return (
                                 <div key={index} className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border p-6`}>
                                     <div className="mb-4">
@@ -1023,11 +1047,12 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                     : null;
                                                 const isCorrect = matchedLeftIndex !== undefined && exercise.pairs[matchedLeftIndex]?.right === rightOption;
                                                 const showResults = matchingState?.showResults;
-                                                const canClick = selectedLeftIndex !== null;
+                                                const isRightSelected = selectedRightIndex === rightIndex;
+                                                const hasAnySelection = selectedLeftIndex !== null || selectedRightIndex !== null;
                                                 return (
                                                     <div
                                                         key={`${rightOption}-${rightIndex}`}
-                                                        onClick={() => canClick && handleClickRightItem(index, rightIndex)}
+                                                        onClick={() => handleClickRightItem(index, rightIndex)}
                                                         onDragOver={(event) => event.preventDefault()}
                                                         onDrop={(event) => {
                                                             event.preventDefault();
@@ -1035,13 +1060,36 @@ export const StudyMode: React.FC<StudyModeProps> = ({ data, onExit, onUpdateData
                                                             if (Number.isNaN(leftIndex)) return;
                                                             handleDropMatch(index, rightIndex, leftIndex);
                                                         }}
-                                                        className={getRightItemClassName(!!matchedLeft, canClick, darkMode)}
+                                                        className={`p-3 rounded-lg border-2 ${isRightSelected ? 'border-solid' : 'border-dashed'} flex items-center justify-between gap-3 min-h-[56px] transition-all cursor-pointer ${
+                                                            isRightSelected
+                                                                ? darkMode
+                                                                    ? 'bg-blue-600 border-blue-500 scale-105 ring-2 ring-blue-400'
+                                                                    : 'bg-blue-600 border-blue-500 scale-105 ring-2 ring-blue-300'
+                                                                : matchedLeft
+                                                                    ? darkMode ? 'border-blue-600 bg-blue-900/30' : 'border-blue-300 bg-blue-50'
+                                                                    : hasAnySelection
+                                                                        ? darkMode ? 'border-blue-500 bg-gray-700 hover:bg-gray-600' : 'border-blue-400 bg-gray-50 hover:bg-blue-50'
+                                                                        : darkMode ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                                                        }`}
                                                     >
-                                                        <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{rightOption}</span>
-                                                        <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>←</span>
-                                                        <span className={getRightItemLabelClassName(!!matchedLeft, canClick, darkMode)}>
-                                                            {matchedLeft || (canClick ? 'Tap here' : 'Drop here')}
+                                                        <span className={`font-medium ${isRightSelected ? 'text-white' : darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                            {rightOption}
+                                                            {isRightSelected && <span className="ml-2">✓</span>}
                                                         </span>
+                                                        {!isRightSelected && (
+                                                            <>
+                                                                <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>←</span>
+                                                                <span className={`text-sm font-semibold ${
+                                                                    matchedLeft 
+                                                                        ? darkMode ? 'text-blue-400' : 'text-blue-700' 
+                                                                        : hasAnySelection
+                                                                            ? darkMode ? 'text-blue-400' : 'text-blue-600'
+                                                                            : darkMode ? 'text-gray-500' : 'text-gray-400'
+                                                                }`}>
+                                                                    {matchedLeft || (hasAnySelection ? 'Tap here' : 'Tap to select')}
+                                                                </span>
+                                                            </>
+                                                        )}
                                                         {showResults && matchedLeft && (
                                                             <span className={`text-xs font-bold ${isCorrect 
                                                                 ? darkMode ? 'text-green-400' : 'text-green-600' 
